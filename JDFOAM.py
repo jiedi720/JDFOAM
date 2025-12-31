@@ -87,12 +87,5 @@ if __name__ == "__main__":
     if len(sys.argv) >= 3:
         update_mesh_and_bc(sys.argv[1], sys.argv[2])
     else:
-        try:
-            import tkinter as tk
-            from gui.main_gui import GmshConverterGUI
-            root = tk.Tk()
-            app = GmshConverterGUI(root, update_func=update_mesh_and_bc)
-            root.mainloop()
-        except Exception as e:
-            print(f"界面启动失败: {e}")
-            input("\n按回车键关闭...")
+        from gui.pyqt5_gui import run_pyqt5_gui
+        run_pyqt5_gui(update_func=update_mesh_and_bc)
