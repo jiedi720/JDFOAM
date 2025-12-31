@@ -15,6 +15,10 @@ def get_boundary_names_from_msh(msh_file):
     它会返回如 ['walls', 'inlet', 'outlet', 'atmosphere'] 的列表。
     """
     names = []
+    if not os.path.exists(msh_file):
+        print(f"错误: MSH 文件不存在 - {msh_file}")
+        return names
+    
     try:
         with open(msh_file, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
@@ -23,6 +27,8 @@ def get_boundary_names_from_msh(msh_file):
             if block:
                 # 在块中查找双引号内的所有边界名称
                 names = re.findall(r'"([^"]+)"', block.group(1))
+            else:
+                print(f"警告: 未在 {msh_file} 中找到 $PhysicalNames 块")
     except Exception as e:
         print(f"解析 MSH 失败: {e}")
     return names
@@ -57,10 +63,10 @@ def update_mesh_and_bc(msh_file, case_dir, logger=print):
     sed_commands.append("sed -i '/defaultFaces/,/}/ s/type[[:space:]]\\+patch;/type            wall;/' constant/polyMesh/boundary")
 
     commands = [
-        f"cd {wsl_case}",
-        f"cp -fv {wsl_msh} .",
+        f"cd \"{wsl_case}\"",
+        f"cp -fv \"{wsl_msh}\" .",
         "if [ -f 'system/controlDict' ]; then sed -i 's/writeControl    adjustable;/writeControl    adjustableRunTime;/g' system/controlDict; fi",
-        f"gmshToFoam {os.path.basename(msh_file)}",
+        f"gmshToFoam \"{os.path.basename(msh_file)}\" || exit 1",
         "rm -f constant/polyMesh/cellZones constant/polyMesh/faceZones constant/polyMesh/pointZones",
         "transformPoints -scale '(0.001 0.001 0.001)'",
         # 真正的代码块作用：将动态生成的多个 sed 命令合并执行

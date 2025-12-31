@@ -86,8 +86,16 @@ class GmshConverterGUI:
         t.start()
 
     def run_worker(self):
-        success = self.update_func(self.msh_path.get(), self.case_path.get(), logger=self.log_msg)
-        self.progress.stop()
-        self.btn.config(state="normal", text="开始执行 (WSL)")
-        if success:
-            messagebox.showinfo("完成", "网格转换及边界修正成功！")
+        try:
+            success = self.update_func(self.msh_path.get(), self.case_path.get(), logger=self.log_msg)
+            self.progress.stop()
+            self.btn.config(state="normal", text="开始执行 (WSL)")
+            if success:
+                messagebox.showinfo("完成", "网格转换及边界修正成功！")
+            else:
+                messagebox.showerror("错误", "网格转换失败，请查看日志输出。")
+        except Exception as e:
+            self.progress.stop()
+            self.btn.config(state="normal", text="开始执行 (WSL)")
+            self.log_msg(f"错误: {str(e)}")
+            messagebox.showerror("异常", f"发生异常: {str(e)}")
