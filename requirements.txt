@@ -1,0 +1,9 @@
+pip install ^
+    PySide6>=6.0.0 ^       # GUI 框架，用于图形界面开发
+    pdfkit>=1.0.0 ^        # HTML 转 PDF 工具，用于将 Markdown 转换为 PDF
+
+# 注意事项:
+# 1. wkhtmltopdf 需要单独下载安装，请访问 https://wkhtmltopdf.org/downloads.html
+# 2. 安装后需要在 JDFOAM.ini 中配置 wkhtmltopdf_path 路径
+# 3. Python 版本要求: 3.7+
+# 4. 推荐使用虚拟环境安装依赖
