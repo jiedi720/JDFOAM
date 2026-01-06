@@ -13,11 +13,13 @@ OpenFOAM 网格转换与源码管理工具 - 基于 PySide6 的图形界面应�
   - `defaultFaces` 自动设置为 `wall` 类型
 - **单位转换**: 自动将网格从毫米转换为米 (缩放因子 0.001)
 - **WSL 集成**: 通过 Windows Subsystem for Linux (WSL) 运行 OpenFOAM 命令
+- **进度反馈**: 实时显示转换进度，任务完成后进度条自动归零
 
 ### 源码管理
 - **代码扫描**: 自动扫描项目目录中的源代码文件
 - **Markdown 合并**: 将多个源文件合并为一个结构化的 Markdown 文档
 - **PDF 导出**: 将 Markdown 文档转换为 PDF 格式，支持 GitHub 风格样式
+- **进度反馈**: 实时显示扫描和转换进度
 
 ### 图形界面
 - **现代 UI**: 基于 PySide6 的现代化图形界面
@@ -25,6 +27,7 @@ OpenFOAM 网格转换与源码管理工具 - 基于 PySide6 的图形界面应�
 - **配置管理**: 使用 INI 文件管理配置，支持持久化
 - **TreeFoam 集成**: 一键启动 TreeFoam 工具
 - **Gmsh 集成**: 一键启动 Gmsh 网格生成工具
+- **实时日志**: 显示操作过程中的详细日志信息
 
 ## 系统要求
 
@@ -46,7 +49,7 @@ cd JDFOAM
 
 2. 安装依赖:
 ```bash
-pip install PySide6 pdfkit
+pip install -r requirements.txt
 ```
 
 3. 安装 wkhtmltopdf:
@@ -182,31 +185,28 @@ theme = dark
 ```
 JDFOAM/
 ├── JDFOAM.py              # 主程序入口
-├── JDFOAM.ini             # 配置文件
+├── JDFOAM.ini             # 配置文件 (打包后自动生成)
+├── JDFOAM.spec            # PyInstaller 配置文件
 ├── build_exe.bat          # 打包脚本
-├── updateGithub_work.ps1  # GitHub 更新脚本
+├── updateGithub.bat       # GitHub 更新脚本
+├── updateGithub.ps1       # GitHub 更新脚本 (PowerShell)
 ├── README.md              # 项目文档
+├── requirements.txt       # 依赖包列表
 ├── function/              # 功能模块
 │   ├── __init__.py
-│   ├── boundary_modifier.py    # 边界类型修正
-│   ├── combine.py              # 源码合并
-│   ├── config.py               # 配置管理
-│   ├── mesh_processor.py       # 网格处理
-│   ├── msh_parser.py           # MSH 文件解析
-│   ├── path_utils.py           # 路径工具
-│   ├── pdf.py                  # PDF 转换
-│   └── worker_thread.py        # 工作线程
+│   ├── Gmsh2OpenFOAM.py   # GMSH 到 OpenFOAM 转换核心模块 (包含 WorkerThread)
+│   ├── config.py          # 配置管理
+│   ├── SourceCodeBinder.py # 源码扫描与合并模块
+│   └── md2pdf.py          # Markdown 到 PDF 转换模块
 ├── gui/                   # 图形界面
 │   ├── __init__.py
-│   ├── main_window_gui.py      # 主窗口
-│   ├── theme_gui.py            # 主题管理
-│   ├── ui_JDFOAM.py            # UI 定义
-│   └── worker_thread_gui.py    # GUI 工作线程
+│   ├── main_window.py     # 主窗口
+│   ├── progressbar.py     # 进度条管理
+│   ├── theme.py           # 主题管理
+│   └── ui_JDFOAM.py       # UI 定义
 └── resources/             # 资源文件
-    ├── gmsh.ico               # Gmsh 图标
-    ├── JDFOAM.ico             # 应用图标
-    ├── JDFOAM.ui              # Qt Designer UI 文件
-    └── TreeFoam.png           # TreeFoam 图标
+    ├── JDFOAM.ico         # 应用图标
+    └── gmsh.ico           # Gmsh 图标
 ```
 
 ## 开发说明
@@ -222,16 +222,16 @@ openfoam_env_source = source /usr/lib/openfoam/openfoam2506/etc/bashrc
 
 ### 修改缩放因子
 
-在 `function/mesh_processor.py` 中修改 `transformPoints` 命令:
+在 `function/Gmsh2OpenFOAM.py` 中修改 `transformPoints` 命令:
 ```python
 "transformPoints -scale '(0.001 0.001 0.001)'"
 ```
 
 ### 添加新的文件扩展名支持
 
-在 `function/combine.py` 的 `ALLOWED_EXTENSIONS` 字典中添加:
+在 `function/SourceCodeBinder.py` 的 `include_extensions` 字典中添加:
 ```python
-ALLOWED_EXTENSIONS = {
+include_extensions = {
     # ... 现有扩展名 ...
     '.xyz': 'xyz',
 }

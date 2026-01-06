@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'JDFOAMZmUcHs.ui'
+## Form generated from reading UI file 'JDFOAMbLSLnM.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.1
 ##
@@ -91,7 +91,6 @@ class Ui_JDFOAM_GUI(object):
         self.case_browse_btn.setMaximumSize(QSize(35, 35))
         self.case_browse_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
-"    color: white;\n"
 "    border-radius: 6px;\n"
 "    border: 1px solid rgb(160, 160, 160); \n"
 "}\n"
@@ -106,7 +105,8 @@ class Ui_JDFOAM_GUI(object):
 "    padding-top: 3px;\n"
 "}\n"
 "")
-        icon = QIcon(QIcon.fromTheme(u"folder-open"))
+        icon = QIcon()
+        icon.addFile(u"../JDFOAM/resources/search.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.case_browse_btn.setIcon(icon)
         self.case_browse_btn.setIconSize(QSize(25, 25))
 
@@ -118,7 +118,6 @@ class Ui_JDFOAM_GUI(object):
         self.case_open_btn.setMaximumSize(QSize(35, 35))
         self.case_open_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
-"    color: white;\n"
 "    border-radius: 6px;\n"
 "    border: 1px solid rgb(160, 160, 160); \n"
 "}\n"
@@ -133,7 +132,8 @@ class Ui_JDFOAM_GUI(object):
 "    padding-top: 3px;\n"
 "}\n"
 "")
-        icon1 = QIcon(QIcon.fromTheme(u"edit-find"))
+        icon1 = QIcon()
+        icon1.addFile(u"../JDFOAM/resources/open-folder.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.case_open_btn.setIcon(icon1)
         self.case_open_btn.setIconSize(QSize(25, 25))
 
@@ -145,7 +145,6 @@ class Ui_JDFOAM_GUI(object):
         self.treefoam_btn.setMaximumSize(QSize(35, 35))
         self.treefoam_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
-"    color: white;\n"
 "    border-radius: 6px;\n"
 "    border: 1px solid rgb(160, 160, 160); \n"
 "}\n"
@@ -161,7 +160,7 @@ class Ui_JDFOAM_GUI(object):
 "}\n"
 "")
         icon2 = QIcon()
-        icon2.addFile(u"TreeFoam.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon2.addFile(u"../JDFOAM/resources/TreeFoam.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.treefoam_btn.setIcon(icon2)
         self.treefoam_btn.setIconSize(QSize(25, 25))
 
@@ -173,7 +172,6 @@ class Ui_JDFOAM_GUI(object):
         self.msh_browse_btn.setMaximumSize(QSize(35, 35))
         self.msh_browse_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
-"    color: white;\n"
 "    border-radius: 6px;\n"
 "    border: 1px solid rgb(160, 160, 160); \n"
 "}\n"
@@ -199,7 +197,6 @@ class Ui_JDFOAM_GUI(object):
         self.msh_open_btn.setMaximumSize(QSize(35, 35))
         self.msh_open_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
-"    color: white;\n"
 "    border-radius: 6px;\n"
 "    border: 1px solid rgb(160, 160, 160); \n"
 "}\n"
@@ -225,7 +222,6 @@ class Ui_JDFOAM_GUI(object):
         self.gmsh_btn.setMaximumSize(QSize(35, 35))
         self.gmsh_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
-"    color: white;\n"
 "    border-radius: 6px;\n"
 "    border: 1px solid rgb(160, 160, 160); \n"
 "}\n"
@@ -241,7 +237,7 @@ class Ui_JDFOAM_GUI(object):
 "}\n"
 "")
         icon3 = QIcon()
-        icon3.addFile(u"gmsh.ico", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon3.addFile(u"../JDFOAM/resources/gmsh.ico", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.gmsh_btn.setIcon(icon3)
         self.gmsh_btn.setIconSize(QSize(25, 25))
 
@@ -312,13 +308,14 @@ class Ui_JDFOAM_GUI(object):
 
         self.combine_pdf_btn = QPushButton(self.centralwidget)
         self.combine_pdf_btn.setObjectName(u"combine_pdf_btn")
-        self.combine_pdf_btn.setEnabled(False)
+        self.combine_pdf_btn.setEnabled(True)
         self.combine_pdf_btn.setMinimumSize(QSize(0, 40))
         self.combine_pdf_btn.setMaximumSize(QSize(200, 16777215))
         self.combine_pdf_btn.setFont(font1)
         self.combine_pdf_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
-"    background-color:rgb(255, 160, 162);\n"
+"    background-color: rgb(207, 1, 56);\n"
+"    color: white;\n"
 "    border-radius: 6px;\n"
 "    padding: 5px 15px;\n"
 "    border: none;\n"
@@ -326,7 +323,7 @@ class Ui_JDFOAM_GUI(object):
 "\n"
 "/* \u60ac\u6d6e\u7279\u6548\uff1a\u80cc\u666f\u989c\u8272\u53d8\u6d45\uff0c\u5e76\u589e\u52a0\u84dd\u8272\u8fb9\u6846\u611f */\n"
 "QPushButton:hover {\n"
-"    background-color: rgb(0, 200, 0); /* \u989c\u8272\u6bd4\u9ed8\u8ba4\u7a0d\u4eae */\n"
+"    background-color: #a70832; /* \u989c\u8272\u6bd4\u9ed8\u8ba4\u7a0d\u4eae */\n"
 "}\n"
 "\n"
 "/* \u6309\u4e0b\u7279\u6548\uff1a\u70b9\u51fb\u65f6\u989c\u8272\u53d8\u6df1\uff0c\u4ea7\u751f\u7269\u7406\u538b\u4e0b\u7684\u9519\u89c9 */\n"
@@ -391,7 +388,7 @@ class Ui_JDFOAM_GUI(object):
         JDFOAM_GUI.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(JDFOAM_GUI)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 630, 22))
+        self.menubar.setGeometry(QRect(0, 0, 630, 33))
         self.menu_theme = QMenu(self.menubar)
         self.menu_theme.setObjectName(u"menu_theme")
         JDFOAM_GUI.setMenuBar(self.menubar)
