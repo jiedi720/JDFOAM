@@ -180,6 +180,36 @@ theme = dark
 - 检查 `JDFOAM.ini` 中的 `wkhtmltopdf_path` 配置
 - 确保已先执行"合并代码为Markdown"操作
 
+## 打包为可执行文件
+
+### 打包步骤
+
+1. 确保已安装 PyInstaller:
+```bash
+pip install pyinstaller
+```
+
+2. 运行打包脚本:
+```bash
+build_exe.bat
+```
+
+3. 打包完成后，可执行文件位于:
+```
+./JDFOAM/JDFOAM.exe
+```
+
+### 打包说明
+
+- 使用目录模式 (-D)，所有依赖文件在同一文件夹中
+- 输出目录: `./JDFOAM/`
+- 打包时会自动包含 `function/`、`gui/` 和 `resources/` 目录
+- 图标路径已修复为绝对路径，确保在打包后按钮图标能正常显示
+
+### 图标修复
+
+程序已修复按钮图标路径问题，使用绝对路径加载图标，确保在开发环境和打包后的 EXE 中都能正确显示所有按钮图标。
+
 ## 项目结构
 
 ```
@@ -188,8 +218,6 @@ JDFOAM/
 ├── JDFOAM.ini             # 配置文件 (打包后自动生成)
 ├── JDFOAM.spec            # PyInstaller 配置文件
 ├── build_exe.bat          # 打包脚本
-├── updateGithub.bat       # GitHub 更新脚本
-├── updateGithub.ps1       # GitHub 更新脚本 (PowerShell)
 ├── README.md              # 项目文档
 ├── requirements.txt       # 依赖包列表
 ├── function/              # 功能模块
@@ -200,13 +228,16 @@ JDFOAM/
 │   └── md2pdf.py          # Markdown 到 PDF 转换模块
 ├── gui/                   # 图形界面
 │   ├── __init__.py
-│   ├── main_window.py     # 主窗口
+│   ├── main_window.py     # 主窗口 (包含图标路径修复逻辑)
 │   ├── progressbar.py     # 进度条管理
 │   ├── theme.py           # 主题管理
 │   └── ui_JDFOAM.py       # UI 定义
 └── resources/             # 资源文件
-    ├── JDFOAM.ico         # 应用图标
-    └── gmsh.ico           # Gmsh 图标
+    ├── JDFOAM.png         # 应用图标 (PNG 格式)
+    ├── gmsh.ico           # Gmsh 图标
+    ├── search.png         # 搜索图标
+    ├── open-folder.png    # 打开文件夹图标
+    └── TreeFoam.png       # TreeFoam 图标
 ```
 
 ## 开发说明
