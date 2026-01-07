@@ -13,13 +13,14 @@ echo.
 echo WARNING: Files will be moved to Recycle Bin, not permanently deleted!
 echo.
 echo Current parent directory:
-cd /d "%~dp0.."
+set "PARENT_DIR=%~dp0.."
+cd /d "%PARENT_DIR%"
 cd
 echo.
 echo Files and folders to be moved to Recycle Bin (excluded: .git, GitSync):
 echo.
 dir /b /a-d
-dir /b /ad | findstr /v "^\.git$" | findstr /v "^GitSync$"
+dir /b /ad | findstr /v /i "^\.git$" | findstr /v /i "^GitSync$"
 echo.
 echo Press Ctrl+C to cancel, or any key to continue...
 pause >nul
@@ -29,44 +30,44 @@ echo Starting cleanup...
 echo.
 
 REM Change to parent directory
-cd /d "%~dp0.."
+cd /d "%PARENT_DIR%"
 
-REM Create a temporary VBScript to move files to Recycle Bin
-set "VBS_SCRIPT=%TEMP%\MoveToRecycleBin.vbs"
+REM Delete files and folders using PowerShell
+set "PS_SCRIPT=%TEMP%\DeleteWithRecycle_%RANDOM%.ps1"
 
-echo Set objShell = CreateObject("Shell.Application") > "%VBS_SCRIPT%"
-echo Set objFolder = objShell.Namespace(0) >> "%VBS_SCRIPT%"
-echo Set objFolderItem = objFolder.ParseName("%TEMP%\RecycleBinTemp") >> "%VBS_SCRIPT%"
-echo objFolderItem.InvokeVerb "delete" >> "%VBS_SCRIPT%"
+REM Create PowerShell script
+(
+echo $ErrorActionPreference = 'SilentlyContinue'
+echo Add-Type -AssemblyName Microsoft.VisualBasic
+echo.
+) > "%PS_SCRIPT%"
 
-REM Create temporary directory for files to be recycled
-set "TEMP_DIR=%TEMP%\RecycleBinTemp"
-if exist "%TEMP_DIR%" rd /s /q "%TEMP_DIR%"
-mkdir "%TEMP_DIR%"
-
-REM Move all files to temp directory (except those in .git and GitSync)
-echo [==========                    ] 25%% Moving files to temp directory...
-for /f "delims=" %%f in ('dir /b /a-d ^| findstr /v "^GitSync"') do (
-    echo Moving file: %%f
-    move /y "%%f" "%TEMP_DIR%\" >nul 2>&1
+REM Delete files directly
+for /f "delims=" %%f in ('dir /b /a-d 2^>nul ^| findstr /v /i "^GitSync"') do (
+    echo Moving file to Recycle Bin: %%f
+    echo $filePath = Join-Path "%PARENT_DIR%" "%%f" >> "%PS_SCRIPT%"
+    echo if ^(Test-Path $filePath^) { >> "%PS_SCRIPT%"
+    echo     Write-Host "Moving to Recycle Bin: %%f" >> "%PS_SCRIPT%"
+    echo     [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile^($filePath, 'OnlyErrorDialogs', 'SendToRecycleBin'^) >> "%PS_SCRIPT%"
+    echo } >> "%PS_SCRIPT%"
 )
 
-REM Move all folders to temp directory except .git and GitSync
-echo [==================            ] 50%% Moving folders to temp directory...
-for /f "delims=" %%d in ('dir /b /ad ^| findstr /v "^\.git$" ^| findstr /v "^GitSync$"') do (
-    echo Moving folder: %%d
-    move /y "%%d" "%TEMP_DIR%\" >nul 2>&1
+REM Delete folders directly
+for /f "delims=" %%d in ('dir /b /ad 2^>nul ^| findstr /v /i "^\.git$" ^| findstr /v /i "^GitSync$"') do (
+    echo Moving folder to Recycle Bin: %%d
+    echo $folderPath = Join-Path "%PARENT_DIR%" "%%d" >> "%PS_SCRIPT%"
+    echo if ^(Test-Path $folderPath^) { >> "%PS_SCRIPT%"
+    echo     Write-Host "Moving to Recycle Bin: %%d" >> "%PS_SCRIPT%"
+    echo     [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory^($folderPath, 'OnlyErrorDialogs', 'SendToRecycleBin'^) >> "%PS_SCRIPT%"
+    echo } >> "%PS_SCRIPT%"
 )
 
-REM Move temp directory to Recycle Bin
+REM Execute the PowerShell script
 echo [========================      ] 75%% Moving to Recycle Bin...
-powershell -Command "Add-Type -AssemblyName Microsoft.VisualBasic; [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory('%TEMP_DIR%', 'OnlyErrorDialogs', 'SendToRecycleBin')" 2>nul
+powershell -ExecutionPolicy Bypass -File "%PS_SCRIPT%"
 
-REM Clean up temp directory if still exists
-if exist "%TEMP_DIR%" rd /s /q "%TEMP_DIR%"
-
-REM Clean up VBScript
-if exist "%VBS_SCRIPT%" del /f /q "%VBS_SCRIPT%"
+REM Clean up PowerShell script
+if exist "%PS_SCRIPT%" del /f /q "%PS_SCRIPT%"
 
 echo [============================] 100%% Complete!
 
