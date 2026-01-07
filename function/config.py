@@ -36,8 +36,20 @@ class ConfigManager:
         self.config_file = os.path.join(self.root_dir, config_file)
         # 使用 RawConfigParser 来正确处理包含引号的值
         self.config = configparser.RawConfigParser()
-        self.gmsh_exe_path = ""  # Gmsh 可执行文件路径
-        self.treefoam_command = ""  # TreeFOAM 命令
+
+        # 设置默认值
+        self.treefoam_command = '"C:\\Program Files\\WSL\\wslg.exe" -d DEXCS2025 -u jiedi -- bash -l -c "/usr/local/bin/start_treefoam.sh; echo \'----------------\'; echo \'Script execution completed\'; read -p \'Press Enter to close window...\'"'  # TreeFOAM 命令默认值
+
+        # Gmsh 默认路径：优先检查 D 盘，然后检查 C 盘
+        default_gmsh_d = "D:\\gmsh-4.15.0-Windows64\\gmsh.exe"
+        default_gmsh_c = "C:\\gmsh-4.15.0-Windows64\\gmsh.exe"
+        if os.path.exists(default_gmsh_d):
+            self.gmsh_exe_path = default_gmsh_d
+        elif os.path.exists(default_gmsh_c):
+            self.gmsh_exe_path = default_gmsh_c
+        else:
+            self.gmsh_exe_path = ""
+
         self.wkhtmltopdf_path = ""  # wkhtmltopdf 可执行文件路径
         self.theme = "light"  # 当前主题，默认为浅色
         self.openfoam_env_source = "source /usr/lib/openfoam/openfoam2506/etc/bashrc"  # OpenFOAM 环境源路径
@@ -48,6 +60,7 @@ class ConfigManager:
         """加载配置文件
 
         从配置文件中读取所有配置项并初始化内部变量
+        只有当配置文件中存在有效的非空值时才覆盖默认值
         """
         try:
             if os.path.exists(self.config_file):
@@ -55,24 +68,35 @@ class ConfigManager:
                     self.config.read_file(f)
                 if self.config.has_section('General'):
                     if self.config.has_option('General', 'gmsh_path'):
-                        self.gmsh_exe_path = self.config.get('General', 'gmsh_path')
+                        value = self.config.get('General', 'gmsh_path')
+                        if value:  # 只有非空值才覆盖默认值
+                            self.gmsh_exe_path = value
                     if self.config.has_option('General', 'treefoam_command'):
-                        self.treefoam_command = self.config.get('General', 'treefoam_command')
+                        value = self.config.get('General', 'treefoam_command')
+                        if value:  # 只有非空值才覆盖默认值
+                            self.treefoam_command = value
                     if self.config.has_option('General', 'wkhtmltopdf_path'):
-                        self.wkhtmltopdf_path = self.config.get('General', 'wkhtmltopdf_path')
+                        value = self.config.get('General', 'wkhtmltopdf_path')
+                        if value:
+                            self.wkhtmltopdf_path = value
                     if self.config.has_option('General', 'theme'):
-                        self.theme = self.config.get('General', 'theme')
+                        value = self.config.get('General', 'theme')
+                        if value:
+                            self.theme = value
                     if self.config.has_option('General', 'case_path'):
-                        self.case_path = self.config.get('General', 'case_path')
+                        value = self.config.get('General', 'case_path')
+                        if value:
+                            self.case_path = value
                     if self.config.has_option('General', 'msh_path'):
-                        self.msh_path = self.config.get('General', 'msh_path')
+                        value = self.config.get('General', 'msh_path')
+                        if value:
+                            self.msh_path = value
                     if self.config.has_option('General', 'openfoam_env_source'):
-                        self.openfoam_env_source = self.config.get('General', 'openfoam_env_source')
+                        value = self.config.get('General', 'openfoam_env_source')
+                        if value:
+                            self.openfoam_env_source = value
         except Exception as e:
             print(f"加载配置文件失败: {e}")
-            self.gmsh_exe_path = ""
-            self.treefoam_command = ""
-            self.wkhtmltopdf_path = ""
 
     def save_config(self):
         """保存配置文件

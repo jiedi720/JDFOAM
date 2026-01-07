@@ -297,7 +297,6 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
 
             self.config_manager.set_gmsh_path(gmsh_exe)
             subprocess.Popen(gmsh_exe)
-            self.log_msg(f"Gmsh 已启动: {gmsh_exe}")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"无法启动Gmsh: {str(e)}")
 
