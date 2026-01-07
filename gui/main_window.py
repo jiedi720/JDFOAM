@@ -11,7 +11,7 @@
 import os
 import subprocess
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-                             QLabel, QLineEdit, QPushButton, QTextEdit, QFileDialog,
+                             QLabel, QLineEdit, QPushButton, QPlainTextEdit, QFileDialog,
                              QGroupBox, QProgressBar, QMessageBox)
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon, QFont
@@ -31,12 +31,13 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
     提供用户友好的图形界面进行 GMSH 网格转换和源代码管理。
     """
 
-    def __init__(self, update_func):
+    def __init__(self, update_func, app_icon_path=None):
         """
         初始化主窗口
 
         Args:
             update_func: 网格更新函数，用于执行 GMSH 到 OpenFOAM 的转换
+            app_icon_path: 应用程序图标文件路径（可选）
         """
         super().__init__()
         self.update_func = update_func          # 网格更新函数
@@ -44,9 +45,13 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
         self.config_manager = ConfigManager()   # 配置管理器
         self.theme_manager = ThemeManager(self) # 主题管理器
         self.progressbar_manager = ProgressBarManager(self)  # 进度条管理器
+        self.app_icon_path = app_icon_path      # 应用程序图标路径
 
         # 设置 UI
         self.setupUi(self)
+
+        # 修复按钮图标路径（使用绝对路径）
+        self.fix_button_icons()
 
         # 设置窗口图标
         self.set_window_icon()
@@ -101,16 +106,50 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
         self.config_manager.set_theme(self.theme_manager.current_theme)
         super().closeEvent(event)
 
-    def set_window_icon(self):
-        """设置窗口图标
+    def fix_button_icons(self):
+        """修复按钮图标路径
 
-        从 resources 目录加载并设置应用程序图标
+        将按钮的图标路径从相对路径改为绝对路径，确保在打包后能正确加载
         """
         # 获取 resources 目录的绝对路径
         resources_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "resources")
 
+        # 定义按钮和对应的图标文件名
+        button_icons = {
+            'case_browse_btn': 'search.png',
+            'case_open_btn': 'open-folder.png',
+            'treefoam_btn': 'TreeFoam.png',
+            'msh_browse_btn': 'search.png',
+            'msh_open_btn': 'open-folder.png',
+            'gmsh_btn': 'gmsh.ico',
+        }
+
+        # 为每个按钮设置正确的图标
+        for button_name, icon_file in button_icons.items():
+            if hasattr(self, button_name):
+                button = getattr(self, button_name)
+                icon_path = os.path.join(resources_path, icon_file)
+                if os.path.exists(icon_path):
+                    button.setIcon(QIcon(icon_path))
+                    print(f"按钮图标已设置: {button_name} -> {icon_path}")
+                else:
+                    print(f"警告: 图标文件不存在: {icon_path}")
+
+    def set_window_icon(self):
+        """设置窗口图标
+
+        从传入的路径或 resources 目录加载并设置应用程序图标
+        """
+        # 优先使用传入的图标路径
+        if self.app_icon_path and os.path.exists(self.app_icon_path):
+            window_icon_path = self.app_icon_path
+        else:
+            # 获取 resources 目录的绝对路径
+            resources_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "resources")
+            # 尝试查找 JDFOAM.png
+            window_icon_path = os.path.join(resources_path, "JDFOAM.png")
+
         # 设置窗口图标
-        window_icon_path = os.path.join(resources_path, "JDFOAM.ico")
         if os.path.exists(window_icon_path):
             self.setWindowIcon(QIcon(window_icon_path))
             print(f"窗口图标已设置: {window_icon_path}")
@@ -424,7 +463,7 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
         self.progressbar_manager.update_progress(0)
 
 
-def run_pyside6_gui(update_func):
+def run_pyside6_gui(update_func, app_icon_path=None):
     """
     运行 PySide6 GUI
 
@@ -432,9 +471,15 @@ def run_pyside6_gui(update_func):
 
     Args:
         update_func: 网格更新函数
+        app_icon_path: 应用程序图标文件路径（可选）
     """
     app = QApplication([])
-    gui = PySide6GmshConverterGUI(update_func)
+
+    # 设置应用程序图标
+    if app_icon_path and os.path.exists(app_icon_path):
+        app.setWindowIcon(QIcon(app_icon_path))
+
+    gui = PySide6GmshConverterGUI(update_func, app_icon_path)
     gui.show()
     app.exec()
 

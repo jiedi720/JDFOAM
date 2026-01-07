@@ -7,11 +7,56 @@
 - 界面元素颜色统一管理
 - 按钮样式动态调整
 - 主题状态持久化保存
+- Windows 标题栏主题切换
 """
 
+import sys
 from PySide6.QtWidgets import QApplication, QStyleFactory
 from PySide6.QtGui import QColor, QPalette, QFont
 from PySide6.QtCore import Qt
+
+# Windows 标题栏主题支持
+if sys.platform == "win32":
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        # 定义 Windows API 常量和结构体
+        # DWMWA_ATTRIBUTE 枚举
+        DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+        DWMWA_MICA_EFFECT = 1029
+
+        # 定义 DwmSetWindowAttribute 函数原型
+        dwmapi = ctypes.windll.dwmapi
+        dwmapi.DwmSetWindowAttribute.restype = ctypes.HRESULT
+        dwmapi.DwmSetWindowAttribute.argtypes = [
+            wintypes.HWND,  # hwnd
+            ctypes.c_ulong,  # dwAttribute
+            ctypes.c_void_p,  # pvAttribute
+            ctypes.c_ulong  # cbAttribute
+        ]
+
+        # 定义 DwmExtendFrameIntoClientArea 函数原型
+        dwmapi.DwmExtendFrameIntoClientArea.restype = ctypes.HRESULT
+        dwmapi.DwmExtendFrameIntoClientArea.argtypes = [
+            wintypes.HWND,  # hwnd
+            ctypes.c_void_p  # pMarInset
+        ]
+
+        # MARGINS 结构体
+        class MARGINS(ctypes.Structure):
+            _fields_ = [
+                ("cxLeftWidth", ctypes.c_int),
+                ("cxRightWidth", ctypes.c_int),
+                ("cyTopHeight", ctypes.c_int),
+                ("cyBottomHeight", ctypes.c_int),
+            ]
+
+        WINDOWS_API_AVAILABLE = True
+    except (ImportError, AttributeError):
+        WINDOWS_API_AVAILABLE = False
+else:
+    WINDOWS_API_AVAILABLE = False
 
 
 class ThemeManager:
@@ -31,6 +76,117 @@ class ThemeManager:
         self.parent = parent_window      # 父窗口引用
         self.current_theme = "light"     # 当前主题，默认为浅色
         self._original_style = None      # 保存原始样式名称
+
+    def set_windows_titlebar_theme(self, theme):
+        """
+        设置 Windows 标题栏主题
+
+        在 Windows 10/11 上使用 DWM API 设置标题栏的深色/浅色模式
+
+        Args:
+            theme (str): 主题名称，"light" 或 "dark"
+        """
+        if not WINDOWS_API_AVAILABLE or sys.platform != "win32":
+            return  # 非 Windows 平台或 API 不可用
+
+        try:
+            # 获取窗口句柄
+            hwnd = int(self.parent.winId())
+
+            # 设置深色模式 (Windows 10/11)
+            use_dark_mode = 1 if theme == "dark" else 0
+
+            # 方法1：使用 DWMWA_USE_IMMERSIVE_DARK_MODE (Windows 10 1803+)
+            try:
+                result = dwmapi.DwmSetWindowAttribute(
+                    hwnd,
+                    DWMWA_USE_IMMERSIVE_DARK_MODE,
+                    ctypes.byref(ctypes.c_int(use_dark_mode)),
+                    ctypes.sizeof(ctypes.c_int)
+                )
+                if result == 0:  # S_OK
+                    print(f"标题栏主题设置成功: {theme}")
+                else:
+                    print(f"标题栏主题设置失败，错误码: {result}")
+            except Exception as e:
+                print(f"设置 DWMWA_USE_IMMERSIVE_DARK_MODE 失败: {e}")
+
+            # 方法2：使用 DWMWA_WINDOW_CORNER_PREFERENCE (Windows 11)
+            try:
+                DWMWA_WINDOW_CORNER_PREFERENCE = 33
+                corner_preference = 2  # DWMWCP_ROUND
+                dwmapi.DwmSetWindowAttribute(
+                    hwnd,
+                    DWMWA_WINDOW_CORNER_PREFERENCE,
+                    ctypes.byref(ctypes.c_int(corner_preference)),
+                    ctypes.sizeof(ctypes.c_int)
+                )
+            except Exception:
+                pass
+
+            # 方法3：使用 DWMWA_BORDER_COLOR (设置边框颜色)
+            try:
+                DWMWA_BORDER_COLOR = 34
+                if theme == "dark":
+                    # 深色边框
+                    border_color = 0x202020  # 深灰色
+                else:
+                    # 浅色边框
+                    border_color = 0x000000  # 黑色
+
+                dwmapi.DwmSetWindowAttribute(
+                    hwnd,
+                    DWMWA_BORDER_COLOR,
+                    ctypes.byref(ctypes.c_int(border_color)),
+                    ctypes.sizeof(ctypes.c_int)
+                )
+            except Exception:
+                pass
+
+            # 方法4：使用 DWMWA_CAPTION_COLOR (设置标题栏背景色)
+            try:
+                DWMWA_CAPTION_COLOR = 35
+                if theme == "dark":
+                    # 深色标题栏
+                    caption_color = 0x202020  # 深灰色
+                else:
+                    # 浅色标题栏
+                    caption_color = 0xFFFFFF  # 白色
+
+                dwmapi.DwmSetWindowAttribute(
+                    hwnd,
+                    DWMWA_CAPTION_COLOR,
+                    ctypes.byref(ctypes.c_int(caption_color)),
+                    ctypes.sizeof(ctypes.c_int)
+                )
+            except Exception:
+                pass
+
+            # 方法5：使用 DWMWA_TEXT_COLOR (设置标题栏文本颜色)
+            try:
+                DWMWA_TEXT_COLOR = 36
+                if theme == "dark":
+                    # 深色模式文本为白色
+                    text_color = 0xFFFFFF
+                else:
+                    # 浅色模式文本为黑色
+                    text_color = 0x000000
+
+                dwmapi.DwmSetWindowAttribute(
+                    hwnd,
+                    DWMWA_TEXT_COLOR,
+                    ctypes.byref(ctypes.c_int(text_color)),
+                    ctypes.sizeof(ctypes.c_int)
+                )
+            except Exception:
+                pass
+
+            # 强制刷新窗口
+            self.parent.update()
+            self.parent.repaint()
+
+        except Exception as e:
+            print(f"设置 Windows 标题栏主题时出错: {e}")
 
     def init_menu(self):
         """初始化主题菜单
@@ -168,6 +324,11 @@ class ThemeManager:
         app.processEvents()
         for widget in QApplication.allWidgets():
             widget.update()
+
+        # 延迟设置 Windows 标题栏主题，确保窗口完全显示后再设置
+        # 使用 QTimer 单次触发，延迟 100ms 后设置标题栏主题
+        from PySide6.QtCore import QTimer
+        QTimer.singleShot(100, lambda: self.set_windows_titlebar_theme(theme))
 
     def update_button_icons(self, theme):
         """

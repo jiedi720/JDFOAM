@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'JDFOAMbLSLnM.ui'
+## Form generated from reading UI file 'JDFOAMCFTXlR.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.1
 ##
@@ -87,8 +87,8 @@ class Ui_JDFOAM_GUI(object):
         self.gridLayout.setHorizontalSpacing(5)
         self.case_browse_btn = QPushButton(self.centralwidget)
         self.case_browse_btn.setObjectName(u"case_browse_btn")
-        self.case_browse_btn.setMinimumSize(QSize(35, 35))
-        self.case_browse_btn.setMaximumSize(QSize(35, 35))
+        self.case_browse_btn.setMinimumSize(QSize(30, 30))
+        self.case_browse_btn.setMaximumSize(QSize(30, 30))
         self.case_browse_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
 "    border-radius: 6px;\n"
@@ -108,14 +108,14 @@ class Ui_JDFOAM_GUI(object):
         icon = QIcon()
         icon.addFile(u"../JDFOAM/resources/search.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.case_browse_btn.setIcon(icon)
-        self.case_browse_btn.setIconSize(QSize(25, 25))
+        self.case_browse_btn.setIconSize(QSize(20, 20))
 
         self.gridLayout.addWidget(self.case_browse_btn, 0, 0, 1, 1)
 
         self.case_open_btn = QPushButton(self.centralwidget)
         self.case_open_btn.setObjectName(u"case_open_btn")
-        self.case_open_btn.setMinimumSize(QSize(35, 35))
-        self.case_open_btn.setMaximumSize(QSize(35, 35))
+        self.case_open_btn.setMinimumSize(QSize(30, 30))
+        self.case_open_btn.setMaximumSize(QSize(30, 30))
         self.case_open_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
 "    border-radius: 6px;\n"
@@ -135,14 +135,14 @@ class Ui_JDFOAM_GUI(object):
         icon1 = QIcon()
         icon1.addFile(u"../JDFOAM/resources/open-folder.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.case_open_btn.setIcon(icon1)
-        self.case_open_btn.setIconSize(QSize(25, 25))
+        self.case_open_btn.setIconSize(QSize(22, 22))
 
         self.gridLayout.addWidget(self.case_open_btn, 0, 1, 1, 1)
 
         self.treefoam_btn = QPushButton(self.centralwidget)
         self.treefoam_btn.setObjectName(u"treefoam_btn")
-        self.treefoam_btn.setMinimumSize(QSize(35, 35))
-        self.treefoam_btn.setMaximumSize(QSize(35, 35))
+        self.treefoam_btn.setMinimumSize(QSize(30, 30))
+        self.treefoam_btn.setMaximumSize(QSize(30, 30))
         self.treefoam_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
 "    border-radius: 6px;\n"
@@ -162,14 +162,14 @@ class Ui_JDFOAM_GUI(object):
         icon2 = QIcon()
         icon2.addFile(u"../JDFOAM/resources/TreeFoam.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.treefoam_btn.setIcon(icon2)
-        self.treefoam_btn.setIconSize(QSize(25, 25))
+        self.treefoam_btn.setIconSize(QSize(23, 23))
 
         self.gridLayout.addWidget(self.treefoam_btn, 0, 2, 1, 1)
 
         self.msh_browse_btn = QPushButton(self.centralwidget)
         self.msh_browse_btn.setObjectName(u"msh_browse_btn")
-        self.msh_browse_btn.setMinimumSize(QSize(35, 35))
-        self.msh_browse_btn.setMaximumSize(QSize(35, 35))
+        self.msh_browse_btn.setMinimumSize(QSize(30, 30))
+        self.msh_browse_btn.setMaximumSize(QSize(30, 30))
         self.msh_browse_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
 "    border-radius: 6px;\n"
@@ -187,14 +187,14 @@ class Ui_JDFOAM_GUI(object):
 "}\n"
 "")
         self.msh_browse_btn.setIcon(icon)
-        self.msh_browse_btn.setIconSize(QSize(25, 25))
+        self.msh_browse_btn.setIconSize(QSize(20, 20))
 
         self.gridLayout.addWidget(self.msh_browse_btn, 1, 0, 1, 1)
 
         self.msh_open_btn = QPushButton(self.centralwidget)
         self.msh_open_btn.setObjectName(u"msh_open_btn")
-        self.msh_open_btn.setMinimumSize(QSize(35, 35))
-        self.msh_open_btn.setMaximumSize(QSize(35, 35))
+        self.msh_open_btn.setMinimumSize(QSize(30, 30))
+        self.msh_open_btn.setMaximumSize(QSize(30, 30))
         self.msh_open_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
 "    border-radius: 6px;\n"
@@ -212,14 +212,14 @@ class Ui_JDFOAM_GUI(object):
 "}\n"
 "")
         self.msh_open_btn.setIcon(icon1)
-        self.msh_open_btn.setIconSize(QSize(25, 25))
+        self.msh_open_btn.setIconSize(QSize(22, 22))
 
         self.gridLayout.addWidget(self.msh_open_btn, 1, 1, 1, 1)
 
         self.gmsh_btn = QPushButton(self.centralwidget)
         self.gmsh_btn.setObjectName(u"gmsh_btn")
-        self.gmsh_btn.setMinimumSize(QSize(35, 35))
-        self.gmsh_btn.setMaximumSize(QSize(35, 35))
+        self.gmsh_btn.setMinimumSize(QSize(30, 30))
+        self.gmsh_btn.setMaximumSize(QSize(30, 30))
         self.gmsh_btn.setStyleSheet(u"/* \u6309\u94ae\u9ed8\u8ba4\u6837\u5f0f */\n"
 "QPushButton {\n"
 "    border-radius: 6px;\n"
@@ -239,7 +239,7 @@ class Ui_JDFOAM_GUI(object):
         icon3 = QIcon()
         icon3.addFile(u"../JDFOAM/resources/gmsh.ico", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.gmsh_btn.setIcon(icon3)
-        self.gmsh_btn.setIconSize(QSize(25, 25))
+        self.gmsh_btn.setIconSize(QSize(23, 23))
 
         self.gridLayout.addWidget(self.gmsh_btn, 1, 2, 1, 1)
 
