@@ -38,8 +38,6 @@ class ConfigManager:
         self.config = configparser.RawConfigParser()
 
         # 设置默认值
-        self.treefoam_command = '"C:\\Program Files\\WSL\\wslg.exe" -d DEXCS2025 -u jiedi -- bash -l -c "/usr/local/bin/start_treefoam.sh; echo \'----------------\'; echo \'Script execution completed\'; read -p \'Press Enter to close window...\'"'  # TreeFOAM 命令默认值
-
         # Gmsh 默认路径：优先检查 D 盘，然后检查 C 盘
         default_gmsh_d = "D:\\gmsh-4.15.0-Windows64\\gmsh.exe"
         default_gmsh_c = "C:\\gmsh-4.15.0-Windows64\\gmsh.exe"
@@ -55,12 +53,26 @@ class ConfigManager:
         self.openfoam_env_source = "source /usr/lib/openfoam/openfoam2506/etc/bashrc"  # OpenFOAM 环境源路径
         self.case_path = ""  # 算例目录路径
         self.msh_path = ""  # MSH 文件路径
-        
-        # WSL 命令默认值
-        self.wsl_files_command = '"C:\\Program Files\\WSL\\wslg.exe" -d DEXCS2025 --cd "~" -- nautilus --new-window'
-        self.wsl_disk_analysis_command = '"C:\\Program Files\\WSL\\wslg.exe" -d DEXCS2025 --cd "~" -- baobab'
-        self.wsl_appearance_command = '"C:\\Program Files\\WSL\\wslg.exe" -d DEXCS2025 --cd "~" -- gnome-tweaks'
-        self.wsl_bashrc_path = 'Z:\\home\\jiedi\\.bashrc'
+        self.wsl_bashrc_path = ""  # WSL .bashrc 路径，将在 load_config 中自动检测
+        self.wsl_base = ""  # WSL 基础命令，将在 load_config 中自动检测
+
+        # Light 主题的默认命令（只包含后面的部分，wsl_base 会自动添加）
+        self.light_wsl_treefoam_command = '-u jiedi -- bash -l -c "/usr/local/bin/start_treefoam.sh; echo \'----------------\'; echo \'Script execution completed\'; read -p \'Press Enter to close window...\'"'
+        self.light_wsl_files_command = '--cd "~" -- nautilus'
+        self.light_wsl_disk_analysis_command = '--cd "~" -- baobab'
+        self.light_wsl_appearance_command = '--cd "~" -- gnome-tweaks'
+
+        # Dark 主题的默认命令（只包含后面的部分，wsl_base 会自动添加）
+        self.dark_wsl_treefoam_command = '-u jiedi -- env GTK_THEME=Adwaita:dark GDK_DPI_SCALE=1.25 GDK_BACKEND=x11 bash -l -c "/usr/local/bin/start_treefoam.sh; echo \'----------------\'; echo \'Script execution completed\'; read -p \'Press Enter to close window...\'"'
+        self.dark_wsl_files_command = '--cd "~" -- bash -ic "nautilus"'
+        self.dark_wsl_disk_analysis_command = '--cd "~" -- bash -ic "baobab"'
+        self.dark_wsl_appearance_command = '--cd "~" -- bash -ic "gnome-tweaks"'
+
+        # 保留旧的默认值用于兼容
+        self.treefoam_command = f'{self.wsl_base} {self.light_wsl_treefoam_command}'
+        self.wsl_files_command = f'{self.wsl_base} {self.light_wsl_files_command}'
+        self.wsl_disk_analysis_command = f'{self.wsl_base} {self.light_wsl_disk_analysis_command}'
+        self.wsl_appearance_command = f'{self.wsl_base} {self.light_wsl_appearance_command}'
 
     def load_config(self):
         """加载配置文件
@@ -77,10 +89,6 @@ class ConfigManager:
                         value = self.config.get('General', 'gmsh_path')
                         if value:  # 只有非空值才覆盖默认值
                             self.gmsh_exe_path = value
-                    if self.config.has_option('General', 'treefoam_command'):
-                        value = self.config.get('General', 'treefoam_command')
-                        if value:  # 只有非空值才覆盖默认值
-                            self.treefoam_command = value
                     if self.config.has_option('General', 'wkhtmltopdf_path'):
                         value = self.config.get('General', 'wkhtmltopdf_path')
                         if value:
@@ -101,46 +109,101 @@ class ConfigManager:
                         value = self.config.get('General', 'openfoam_env_source')
                         if value:
                             self.openfoam_env_source = value
-                    if self.config.has_option('General', 'wsl_files_command'):
-                        value = self.config.get('General', 'wsl_files_command')
-                        if value:
-                            self.wsl_files_command = value
-                    if self.config.has_option('General', 'wsl_disk_analysis_command'):
-                        value = self.config.get('General', 'wsl_disk_analysis_command')
-                        if value:
-                            self.wsl_disk_analysis_command = value
-                    if self.config.has_option('General', 'wsl_appearance_command'):
-                        value = self.config.get('General', 'wsl_appearance_command')
-                        if value:
-                            self.wsl_appearance_command = value
                     if self.config.has_option('General', 'wsl_bashrc_path'):
                         value = self.config.get('General', 'wsl_bashrc_path')
                         if value:
                             self.wsl_bashrc_path = value
+                    if self.config.has_option('General', 'wsl_base'):
+                        value = self.config.get('General', 'wsl_base')
+                        if value:
+                            self.wsl_base = value
+
+                # 如果配置文件中没有设置 wsl_base，则自动检测盘符
+                if not self.wsl_base:
+                    for drive_letter in ['C', 'D', 'E']:
+                        wslg_path = f"{drive_letter}:\\Program Files\\WSL\\wslg.exe"
+                        if os.path.exists(wslg_path):
+                            self.wsl_base = f'"{wslg_path}" -d DEXCS2025'
+                            break
+
+                # 如果配置文件中没有设置 wsl_bashrc_path，则自动检测盘符
+                if not self.wsl_bashrc_path:
+                    for drive_letter in ['Z', 'Y', 'X', 'W', 'V', 'U', 'T', 'S', 'R', 'Q', 'P', 'O', 'N', 'M', 'L', 'K', 'J', 'I', 'H']:
+                        bashrc_path = f"{drive_letter}:\\home\\jiedi\\.bashrc"
+                        if os.path.exists(bashrc_path):
+                            self.wsl_bashrc_path = bashrc_path
+                            break
+
+                # 读取 [light] 和 [dark] section 的命令配置
+                # 这些配置会在 get_*_command 方法中根据主题动态获取
         except Exception as e:
             print(f"加载配置文件失败: {e}")
 
     def save_config(self):
         """保存配置文件
 
-        将当前配置项保存到配置文件中
+        将当前配置项保存到配置文件中，包含 [General]、[light] 和 [dark] 三个 section
+        保留用户在配置文件中已经设置的命令，只更新 [General] section 的内容
         """
-        # 直接写入文件，按指定顺序
         try:
+            # 读取现有配置文件，保留 [light] 和 [dark] section 的内容
+            light_commands = {}
+            dark_commands = {}
+
+            if os.path.exists(self.config_file):
+                temp_config = configparser.RawConfigParser()
+                with open(self.config_file, 'r', encoding='utf-8') as f:
+                    temp_config.read_file(f)
+
+                # 读取 [light] section 的命令
+                if temp_config.has_section('light'):
+                    if temp_config.has_option('light', 'light_wsl_treefoam_command'):
+                        light_commands['light_wsl_treefoam_command'] = temp_config.get('light', 'light_wsl_treefoam_command')
+                    if temp_config.has_option('light', 'light_wsl_files_command'):
+                        light_commands['light_wsl_files_command'] = temp_config.get('light', 'light_wsl_files_command')
+                    if temp_config.has_option('light', 'light_wsl_disk_analysis_command'):
+                        light_commands['light_wsl_disk_analysis_command'] = temp_config.get('light', 'light_wsl_disk_analysis_command')
+                    if temp_config.has_option('light', 'light_wsl_appearance_command'):
+                        light_commands['light_wsl_appearance_command'] = temp_config.get('light', 'light_wsl_appearance_command')
+
+                # 读取 [dark] section 的命令
+                if temp_config.has_section('dark'):
+                    if temp_config.has_option('dark', 'dark_wsl_treefoam_command'):
+                        dark_commands['dark_wsl_treefoam_command'] = temp_config.get('dark', 'dark_wsl_treefoam_command')
+                    if temp_config.has_option('dark', 'dark_wsl_files_command'):
+                        dark_commands['dark_wsl_files_command'] = temp_config.get('dark', 'dark_wsl_files_command')
+                    if temp_config.has_option('dark', 'dark_wsl_disk_analysis_command'):
+                        dark_commands['dark_wsl_disk_analysis_command'] = temp_config.get('dark', 'dark_wsl_disk_analysis_command')
+                    if temp_config.has_option('dark', 'dark_wsl_appearance_command'):
+                        dark_commands['dark_wsl_appearance_command'] = temp_config.get('dark', 'dark_wsl_appearance_command')
+
+            # 写入配置文件
             with open(self.config_file, 'w', encoding='utf-8') as f:
+                # [General] section
                 f.write('[General]\n')
-                # 将theme选项放在最顶部
                 f.write(f'theme = {self.theme}\n')
                 f.write(f'case_path = {self.case_path}\n')
                 f.write(f'msh_path = {self.msh_path}\n')
                 f.write(f'gmsh_path = {self.gmsh_exe_path}\n')
                 f.write(f'openfoam_env_source = {self.openfoam_env_source}\n')
                 f.write(f'wsl_bashrc_path = {self.wsl_bashrc_path}\n')
-                f.write(f'treefoam_command = {self.treefoam_command}\n')
                 f.write(f'wkhtmltopdf_path = {self.wkhtmltopdf_path}\n')
-                f.write(f'wsl_files_command = {self.wsl_files_command}\n')
-                f.write(f'wsl_disk_analysis_command = {self.wsl_disk_analysis_command}\n')
-                f.write(f'wsl_appearance_command = {self.wsl_appearance_command}\n')
+                f.write('\n')
+
+                # [light] section - 使用保存的值或默认值
+                f.write('[light]\n')
+                f.write(f'light_wsl_treefoam_command = {light_commands.get("light_wsl_treefoam_command", self.light_wsl_treefoam_command)}\n')
+                f.write(f'light_wsl_files_command = {light_commands.get("light_wsl_files_command", self.light_wsl_files_command)}\n')
+                f.write(f'light_wsl_disk_analysis_command = {light_commands.get("light_wsl_disk_analysis_command", self.light_wsl_disk_analysis_command)}\n')
+                f.write(f'light_wsl_appearance_command = {light_commands.get("light_wsl_appearance_command", self.light_wsl_appearance_command)}\n')
+                f.write('\n')
+
+                # [dark] section - 使用保存的值或默认值
+                f.write('[dark]\n')
+                f.write(f'dark_wsl_treefoam_command = {dark_commands.get("dark_wsl_treefoam_command", self.dark_wsl_treefoam_command)}\n')
+                f.write(f'dark_wsl_files_command = {dark_commands.get("dark_wsl_files_command", self.dark_wsl_files_command)}\n')
+                f.write(f'dark_wsl_disk_analysis_command = {dark_commands.get("dark_wsl_disk_analysis_command", self.dark_wsl_disk_analysis_command)}\n')
+                f.write(f'dark_wsl_appearance_command = {dark_commands.get("dark_wsl_appearance_command", self.dark_wsl_appearance_command)}\n')
         except Exception as e:
             print(f"保存配置文件失败: {e}")
 
@@ -167,10 +230,37 @@ class ConfigManager:
         """
         获取 TreeFOAM 命令
 
+        根据当前主题从配置文件读取对应的命令配置。
+        如果该主题下没有配置，则使用默认值。
+        返回的命令会自动添加 wsl_base 前缀。
+
         Returns:
             str: TreeFOAM 命令
         """
-        return self.treefoam_command
+        command_suffix = ""
+        try:
+            if self.config.has_section(self.theme):
+                if self.theme == 'light':
+                    option_name = 'light_wsl_treefoam_command'
+                else:
+                    option_name = 'dark_wsl_treefoam_command'
+
+                if self.config.has_option(self.theme, option_name):
+                    value = self.config.get(self.theme, option_name)
+                    if value:
+                        command_suffix = value
+        except Exception as e:
+            print(f"读取 TreeFOAM 命令失败: {e}")
+
+        # 如果没有找到配置，使用默认值
+        if not command_suffix:
+            if self.theme == 'light':
+                command_suffix = self.light_wsl_treefoam_command
+            else:
+                command_suffix = self.dark_wsl_treefoam_command
+
+        # 返回完整的命令（wsl_base + 命令后缀）
+        return f'{self.wsl_base} {command_suffix}'
 
     def set_treefoam_command(self, command):
         """
@@ -200,27 +290,74 @@ class ConfigManager:
         """
         self.theme = theme
         self.save_all_config()
+        # 重新加载配置文件，确保 self.config 对象包含最新的配置
+        self.load_config()
 
     def save_all_config(self):
         """保存所有配置
 
-        将所有配置项保存到配置文件中
+        将所有配置项保存到配置文件中，包含 [General]、[light] 和 [dark] 三个 section
+        保留用户在配置文件中已经设置的命令，只更新 [General] section 的内容
         """
-        # 直接写入文件，按指定顺序
         try:
+            # 读取现有配置文件，保留 [light] 和 [dark] section 的内容
+            light_commands = {}
+            dark_commands = {}
+
+            if os.path.exists(self.config_file):
+                temp_config = configparser.RawConfigParser()
+                with open(self.config_file, 'r', encoding='utf-8') as f:
+                    temp_config.read_file(f)
+
+                # 读取 [light] section 的命令
+                if temp_config.has_section('light'):
+                    if temp_config.has_option('light', 'light_wsl_treefoam_command'):
+                        light_commands['light_wsl_treefoam_command'] = temp_config.get('light', 'light_wsl_treefoam_command')
+                    if temp_config.has_option('light', 'light_wsl_files_command'):
+                        light_commands['light_wsl_files_command'] = temp_config.get('light', 'light_wsl_files_command')
+                    if temp_config.has_option('light', 'light_wsl_disk_analysis_command'):
+                        light_commands['light_wsl_disk_analysis_command'] = temp_config.get('light', 'light_wsl_disk_analysis_command')
+                    if temp_config.has_option('light', 'light_wsl_appearance_command'):
+                        light_commands['light_wsl_appearance_command'] = temp_config.get('light', 'light_wsl_appearance_command')
+
+                # 读取 [dark] section 的命令
+                if temp_config.has_section('dark'):
+                    if temp_config.has_option('dark', 'dark_wsl_treefoam_command'):
+                        dark_commands['dark_wsl_treefoam_command'] = temp_config.get('dark', 'dark_wsl_treefoam_command')
+                    if temp_config.has_option('dark', 'dark_wsl_files_command'):
+                        dark_commands['dark_wsl_files_command'] = temp_config.get('dark', 'dark_wsl_files_command')
+                    if temp_config.has_option('dark', 'dark_wsl_disk_analysis_command'):
+                        dark_commands['dark_wsl_disk_analysis_command'] = temp_config.get('dark', 'dark_wsl_disk_analysis_command')
+                    if temp_config.has_option('dark', 'dark_wsl_appearance_command'):
+                        dark_commands['dark_wsl_appearance_command'] = temp_config.get('dark', 'dark_wsl_appearance_command')
+
+            # 写入配置文件
             with open(self.config_file, 'w', encoding='utf-8') as f:
+                # [General] section
                 f.write('[General]\n')
-                # 将theme选项放在最顶部
                 f.write(f'theme = {self.theme}\n')
                 f.write(f'case_path = {self.case_path}\n')
                 f.write(f'msh_path = {self.msh_path}\n')
                 f.write(f'gmsh_path = {self.gmsh_exe_path}\n')
                 f.write(f'openfoam_env_source = {self.openfoam_env_source}\n')
                 f.write(f'wsl_bashrc_path = {self.wsl_bashrc_path}\n')
-                f.write(f'treefoam_command = {self.treefoam_command}\n')
-                f.write(f'wsl_files_command = {self.wsl_files_command}\n')
-                f.write(f'wsl_disk_analysis_command = {self.wsl_disk_analysis_command}\n')
-                f.write(f'wsl_appearance_command = {self.wsl_appearance_command}\n')
+                f.write(f'wsl_base = {self.wsl_base}\n')
+                f.write('\n')
+
+                # [light] section - 使用保存的值或默认值
+                f.write('[light]\n')
+                f.write(f'light_wsl_treefoam_command = {light_commands.get("light_wsl_treefoam_command", self.light_wsl_treefoam_command)}\n')
+                f.write(f'light_wsl_files_command = {light_commands.get("light_wsl_files_command", self.light_wsl_files_command)}\n')
+                f.write(f'light_wsl_disk_analysis_command = {light_commands.get("light_wsl_disk_analysis_command", self.light_wsl_disk_analysis_command)}\n')
+                f.write(f'light_wsl_appearance_command = {light_commands.get("light_wsl_appearance_command", self.light_wsl_appearance_command)}\n')
+                f.write('\n')
+
+                # [dark] section - 使用保存的值或默认值
+                f.write('[dark]\n')
+                f.write(f'dark_wsl_treefoam_command = {dark_commands.get("dark_wsl_treefoam_command", self.dark_wsl_treefoam_command)}\n')
+                f.write(f'dark_wsl_files_command = {dark_commands.get("dark_wsl_files_command", self.dark_wsl_files_command)}\n')
+                f.write(f'dark_wsl_disk_analysis_command = {dark_commands.get("dark_wsl_disk_analysis_command", self.dark_wsl_disk_analysis_command)}\n')
+                f.write(f'dark_wsl_appearance_command = {dark_commands.get("dark_wsl_appearance_command", self.dark_wsl_appearance_command)}\n')
         except Exception as e:
             print(f"保存配置文件失败: {e}")
 
@@ -304,10 +441,37 @@ class ConfigManager:
         """
         获取 WSL Files (Nautilus) 命令
 
+        根据当前主题从配置文件读取对应的命令配置。
+        如果该主题下没有配置，则使用默认值。
+        返回的命令会自动添加 wsl_base 前缀。
+
         Returns:
             str: WSL Files 命令
         """
-        return self.wsl_files_command
+        command_suffix = ""
+        try:
+            if self.config.has_section(self.theme):
+                if self.theme == 'light':
+                    option_name = 'light_wsl_files_command'
+                else:
+                    option_name = 'dark_wsl_files_command'
+
+                if self.config.has_option(self.theme, option_name):
+                    value = self.config.get(self.theme, option_name)
+                    if value:
+                        command_suffix = value
+        except Exception as e:
+            print(f"读取 WSL Files 命令失败: {e}")
+
+        # 如果没有找到配置，使用默认值
+        if not command_suffix:
+            if self.theme == 'light':
+                command_suffix = self.light_wsl_files_command
+            else:
+                command_suffix = self.dark_wsl_files_command
+
+        # 返回完整的命令（wsl_base + 命令后缀）
+        return f'{self.wsl_base} {command_suffix}'
 
     def set_wsl_files_command(self, command):
         """
@@ -323,10 +487,37 @@ class ConfigManager:
         """
         获取 WSL Disk Analysis (Baobab) 命令
 
+        根据当前主题从配置文件读取对应的命令配置。
+        如果该主题下没有配置，则使用默认值。
+        返回的命令会自动添加 wsl_base 前缀。
+
         Returns:
             str: WSL Disk Analysis 命令
         """
-        return self.wsl_disk_analysis_command
+        command_suffix = ""
+        try:
+            if self.config.has_section(self.theme):
+                if self.theme == 'light':
+                    option_name = 'light_wsl_disk_analysis_command'
+                else:
+                    option_name = 'dark_wsl_disk_analysis_command'
+
+                if self.config.has_option(self.theme, option_name):
+                    value = self.config.get(self.theme, option_name)
+                    if value:
+                        command_suffix = value
+        except Exception as e:
+            print(f"读取 WSL Disk Analysis 命令失败: {e}")
+
+        # 如果没有找到配置，使用默认值
+        if not command_suffix:
+            if self.theme == 'light':
+                command_suffix = self.light_wsl_disk_analysis_command
+            else:
+                command_suffix = self.dark_wsl_disk_analysis_command
+
+        # 返回完整的命令（wsl_base + 命令后缀）
+        return f'{self.wsl_base} {command_suffix}'
 
     def set_wsl_disk_analysis_command(self, command):
         """
@@ -342,10 +533,37 @@ class ConfigManager:
         """
         获取 WSL Appearance (Gnome Tweaks) 命令
 
+        根据当前主题从配置文件读取对应的命令配置。
+        如果该主题下没有配置，则使用默认值。
+        返回的命令会自动添加 wsl_base 前缀。
+
         Returns:
             str: WSL Appearance 命令
         """
-        return self.wsl_appearance_command
+        command_suffix = ""
+        try:
+            if self.config.has_section(self.theme):
+                if self.theme == 'light':
+                    option_name = 'light_wsl_appearance_command'
+                else:
+                    option_name = 'dark_wsl_appearance_command'
+
+                if self.config.has_option(self.theme, option_name):
+                    value = self.config.get(self.theme, option_name)
+                    if value:
+                        command_suffix = value
+        except Exception as e:
+            print(f"读取 WSL Appearance 命令失败: {e}")
+
+        # 如果没有找到配置，使用默认值
+        if not command_suffix:
+            if self.theme == 'light':
+                command_suffix = self.light_wsl_appearance_command
+            else:
+                command_suffix = self.dark_wsl_appearance_command
+
+        # 返回完整的命令（wsl_base + 命令后缀）
+        return f'{self.wsl_base} {command_suffix}'
 
     def set_wsl_appearance_command(self, command):
         """
