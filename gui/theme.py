@@ -197,10 +197,6 @@ class ThemeManager:
         light_action = self.parent.action_light_theme  # 浅色主题菜单项
         dark_action = self.parent.action_dark_theme    # 深色主题菜单项
 
-        # 设置为可选择
-        light_action.setCheckable(True)
-        dark_action.setCheckable(True)
-
         # 连接信号到主题切换方法
         light_action.triggered.connect(lambda: self.set_theme("light"))
         dark_action.triggered.connect(lambda: self.set_theme("dark"))
@@ -218,10 +214,6 @@ class ThemeManager:
             return  # 主题未变化，直接返回
 
         self.current_theme = theme  # 更新当前主题
-
-        # 更新菜单项状态，显示当前选中的主题
-        self.parent.action_light_theme.setChecked(theme == "light")
-        self.parent.action_dark_theme.setChecked(theme == "dark")
 
         # 应用新主题
         self.apply_theme(theme)

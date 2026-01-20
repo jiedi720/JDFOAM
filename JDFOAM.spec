@@ -5,7 +5,7 @@ import os
 current_dir = os.path.dirname(os.path.abspath(SPEC))
 
 # 图标文件的完整路径
-ICON_PATH = os.path.join(current_dir, 'resources', 'JDFOAM.png')
+ICON_PATH = os.path.join(current_dir, 'icons', 'JDFOAM.png')
 
 a = Analysis(
     ['JDFOAM.py'],
@@ -15,7 +15,7 @@ a = Analysis(
         # 包含资源文件
         ('function', 'function'),  # 包含整个 function 目录
         ('gui', 'gui'),            # 包含整个 gui 目录
-        ('resources', 'resources'),  # 包含整个 resources 目录
+        ('icons', 'icons'),  # 包含整个 resources 目录
     ],
     hiddenimports=[
         # PySide6 相关的隐式导入

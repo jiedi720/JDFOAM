@@ -82,7 +82,7 @@ def is_text_file(file_path):
             # 尝试解码确认是否为文本
             chunk.decode('utf-8')
             return True
-    except (UnicodeDecodeError, PermissionError):
+    except (UnicodeDecodeError, PermissionError, OSError):
         return False
 
 
@@ -134,6 +134,14 @@ def scan_directory(root_dir, exclude_dirs_param=None, progress_callback=None, lo
             if file == output_filename: continue  # 不扫描自己
             full_path = os.path.join(root, file)
             ext = os.path.splitext(file)[1].lower()
+
+            # 排除主目录下的 .txt 文件
+            if ext == '.txt' and os.path.normpath(root) == os.path.normpath(root_dir):
+                continue
+
+            # 排除所有 .bat 文件
+            if ext == '.bat':
+                continue
 
             # 后缀匹配且通过文本特征检测
             if ext in include_extensions or (ext == ''):

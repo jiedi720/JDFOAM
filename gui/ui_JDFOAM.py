@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'JDFOAMCFTXlR.ui'
+## Form generated from reading UI file 'JDFOAMgKLPPr.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.1
 ##
@@ -36,6 +36,14 @@ class Ui_JDFOAM_GUI(object):
         self.action_dark_theme = QAction(JDFOAM_GUI)
         self.action_dark_theme.setObjectName(u"action_dark_theme")
         self.action_dark_theme.setFont(font)
+        self.actionNautilus = QAction(JDFOAM_GUI)
+        self.actionNautilus.setObjectName(u"actionNautilus")
+        self.actionBaobab = QAction(JDFOAM_GUI)
+        self.actionBaobab.setObjectName(u"actionBaobab")
+        self.actionGnome_tweaks = QAction(JDFOAM_GUI)
+        self.actionGnome_tweaks.setObjectName(u"actionGnome_tweaks")
+        self.action_bashrc = QAction(JDFOAM_GUI)
+        self.action_bashrc.setObjectName(u"action_bashrc")
         self.centralwidget = QWidget(JDFOAM_GUI)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout_2 = QVBoxLayout(self.centralwidget)
@@ -391,11 +399,18 @@ class Ui_JDFOAM_GUI(object):
         self.menubar.setGeometry(QRect(0, 0, 630, 33))
         self.menu_theme = QMenu(self.menubar)
         self.menu_theme.setObjectName(u"menu_theme")
+        self.menuWSL = QMenu(self.menubar)
+        self.menuWSL.setObjectName(u"menuWSL")
         JDFOAM_GUI.setMenuBar(self.menubar)
 
         self.menubar.addAction(self.menu_theme.menuAction())
+        self.menubar.addAction(self.menuWSL.menuAction())
         self.menu_theme.addAction(self.action_light_theme)
         self.menu_theme.addAction(self.action_dark_theme)
+        self.menuWSL.addAction(self.actionNautilus)
+        self.menuWSL.addAction(self.actionBaobab)
+        self.menuWSL.addAction(self.actionGnome_tweaks)
+        self.menuWSL.addAction(self.action_bashrc)
 
         self.retranslateUi(JDFOAM_GUI)
 
@@ -404,8 +419,12 @@ class Ui_JDFOAM_GUI(object):
 
     def retranslateUi(self, JDFOAM_GUI):
         JDFOAM_GUI.setWindowTitle(QCoreApplication.translate("JDFOAM_GUI", u"JDFOAM", None))
-        self.action_light_theme.setText(QCoreApplication.translate("JDFOAM_GUI", u"light", None))
-        self.action_dark_theme.setText(QCoreApplication.translate("JDFOAM_GUI", u"dark", None))
+        self.action_light_theme.setText(QCoreApplication.translate("JDFOAM_GUI", u"Light", None))
+        self.action_dark_theme.setText(QCoreApplication.translate("JDFOAM_GUI", u"Dark", None))
+        self.actionNautilus.setText(QCoreApplication.translate("JDFOAM_GUI", u"Files", None))
+        self.actionBaobab.setText(QCoreApplication.translate("JDFOAM_GUI", u"Disk Analysis", None))
+        self.actionGnome_tweaks.setText(QCoreApplication.translate("JDFOAM_GUI", u"Appearance", None))
+        self.action_bashrc.setText(QCoreApplication.translate("JDFOAM_GUI", u".bashrc", None))
         self.case_label.setText(QCoreApplication.translate("JDFOAM_GUI", u"\u7b97\u4f8b\u76ee\u5f55:", None))
         self.case_path_edit.setPlaceholderText(QCoreApplication.translate("JDFOAM_GUI", u"\u9009\u62e9\u7b97\u4f8b\u9879\u76ee\u6839\u76ee\u5f55", None))
         self.msh_label.setText(QCoreApplication.translate("JDFOAM_GUI", u".msh\u6587\u4ef6:", None))
@@ -439,5 +458,6 @@ class Ui_JDFOAM_GUI(object):
         self.combine_pdf_btn.setText(QCoreApplication.translate("JDFOAM_GUI", u"\u5bfc\u51fa\u4ee3\u7801\u4e3aPDF", None))
         self.progress_bar.setFormat("")
         self.menu_theme.setTitle(QCoreApplication.translate("JDFOAM_GUI", u"Theme", None))
+        self.menuWSL.setTitle(QCoreApplication.translate("JDFOAM_GUI", u"WSL", None))
     # retranslateUi
 

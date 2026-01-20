@@ -33,10 +33,10 @@ if __name__ == "__main__":
         update_mesh_and_bc(sys.argv[1], sys.argv[2])
     else:
         # 参数不足，启动图形用户界面模式
-        from gui.main_window import run_pyside6_gui
+        from gui.qt_gui import run_jdfoam_gui
 
         # 设置应用程序图标路径
-        icon_path = os.path.join(current_dir, "resources", "JDFOAM.png")
+        icon_path = os.path.join(current_dir, "icons", "JDFOAM.png")
 
         # 使用网格转换函数初始化GUI，传递图标路径
-        run_pyside6_gui(update_func=update_mesh_and_bc, app_icon_path=icon_path if os.path.exists(icon_path) else None)
+        run_jdfoam_gui(update_func=update_mesh_and_bc, app_icon_path=icon_path if os.path.exists(icon_path) else None)

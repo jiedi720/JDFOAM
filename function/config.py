@@ -55,6 +55,12 @@ class ConfigManager:
         self.openfoam_env_source = "source /usr/lib/openfoam/openfoam2506/etc/bashrc"  # OpenFOAM 环境源路径
         self.case_path = ""  # 算例目录路径
         self.msh_path = ""  # MSH 文件路径
+        
+        # WSL 命令默认值
+        self.wsl_files_command = '"C:\\Program Files\\WSL\\wslg.exe" -d DEXCS2025 --cd "~" -- nautilus --new-window'
+        self.wsl_disk_analysis_command = '"C:\\Program Files\\WSL\\wslg.exe" -d DEXCS2025 --cd "~" -- baobab'
+        self.wsl_appearance_command = '"C:\\Program Files\\WSL\\wslg.exe" -d DEXCS2025 --cd "~" -- gnome-tweaks'
+        self.wsl_bashrc_path = 'Z:\\home\\jiedi\\.bashrc'
 
     def load_config(self):
         """加载配置文件
@@ -95,6 +101,22 @@ class ConfigManager:
                         value = self.config.get('General', 'openfoam_env_source')
                         if value:
                             self.openfoam_env_source = value
+                    if self.config.has_option('General', 'wsl_files_command'):
+                        value = self.config.get('General', 'wsl_files_command')
+                        if value:
+                            self.wsl_files_command = value
+                    if self.config.has_option('General', 'wsl_disk_analysis_command'):
+                        value = self.config.get('General', 'wsl_disk_analysis_command')
+                        if value:
+                            self.wsl_disk_analysis_command = value
+                    if self.config.has_option('General', 'wsl_appearance_command'):
+                        value = self.config.get('General', 'wsl_appearance_command')
+                        if value:
+                            self.wsl_appearance_command = value
+                    if self.config.has_option('General', 'wsl_bashrc_path'):
+                        value = self.config.get('General', 'wsl_bashrc_path')
+                        if value:
+                            self.wsl_bashrc_path = value
         except Exception as e:
             print(f"加载配置文件失败: {e}")
 
@@ -103,15 +125,22 @@ class ConfigManager:
 
         将当前配置项保存到配置文件中
         """
+        # 直接写入文件，按指定顺序
         try:
-            if not self.config.has_section('General'):
-                self.config.add_section('General')
-            self.config.set('General', 'gmsh_path', self.gmsh_exe_path)
-            self.config.set('General', 'treefoam_command', self.treefoam_command)
-            self.config.set('General', 'wkhtmltopdf_path', self.wkhtmltopdf_path)
-
             with open(self.config_file, 'w', encoding='utf-8') as f:
-                self.config.write(f)
+                f.write('[General]\n')
+                # 将theme选项放在最顶部
+                f.write(f'theme = {self.theme}\n')
+                f.write(f'case_path = {self.case_path}\n')
+                f.write(f'msh_path = {self.msh_path}\n')
+                f.write(f'gmsh_path = {self.gmsh_exe_path}\n')
+                f.write(f'openfoam_env_source = {self.openfoam_env_source}\n')
+                f.write(f'wsl_bashrc_path = {self.wsl_bashrc_path}\n')
+                f.write(f'treefoam_command = {self.treefoam_command}\n')
+                f.write(f'wkhtmltopdf_path = {self.wkhtmltopdf_path}\n')
+                f.write(f'wsl_files_command = {self.wsl_files_command}\n')
+                f.write(f'wsl_disk_analysis_command = {self.wsl_disk_analysis_command}\n')
+                f.write(f'wsl_appearance_command = {self.wsl_appearance_command}\n')
         except Exception as e:
             print(f"保存配置文件失败: {e}")
 
@@ -177,18 +206,21 @@ class ConfigManager:
 
         将所有配置项保存到配置文件中
         """
-        if not self.config.has_section('General'):
-            self.config.add_section('General')
-        self.config.set('General', 'gmsh_path', self.gmsh_exe_path)
-        self.config.set('General', 'openfoam_env_source', self.openfoam_env_source)
-        self.config.set('General', 'treefoam_command', self.treefoam_command)
-        self.config.set('General', 'theme', self.theme)
-        self.config.set('General', 'case_path', self.case_path)
-        self.config.set('General', 'msh_path', self.msh_path)
-
+        # 直接写入文件，按指定顺序
         try:
             with open(self.config_file, 'w', encoding='utf-8') as f:
-                self.config.write(f)
+                f.write('[General]\n')
+                # 将theme选项放在最顶部
+                f.write(f'theme = {self.theme}\n')
+                f.write(f'case_path = {self.case_path}\n')
+                f.write(f'msh_path = {self.msh_path}\n')
+                f.write(f'gmsh_path = {self.gmsh_exe_path}\n')
+                f.write(f'openfoam_env_source = {self.openfoam_env_source}\n')
+                f.write(f'wsl_bashrc_path = {self.wsl_bashrc_path}\n')
+                f.write(f'treefoam_command = {self.treefoam_command}\n')
+                f.write(f'wsl_files_command = {self.wsl_files_command}\n')
+                f.write(f'wsl_disk_analysis_command = {self.wsl_disk_analysis_command}\n')
+                f.write(f'wsl_appearance_command = {self.wsl_appearance_command}\n')
         except Exception as e:
             print(f"保存配置文件失败: {e}")
 
@@ -266,4 +298,80 @@ class ConfigManager:
             path (str): MSH 文件路径
         """
         self.msh_path = path
+        self.save_all_config()
+
+    def get_wsl_files_command(self):
+        """
+        获取 WSL Files (Nautilus) 命令
+
+        Returns:
+            str: WSL Files 命令
+        """
+        return self.wsl_files_command
+
+    def set_wsl_files_command(self, command):
+        """
+        设置 WSL Files (Nautilus) 命令
+
+        Args:
+            command (str): WSL Files 命令
+        """
+        self.wsl_files_command = command
+        self.save_all_config()
+
+    def get_wsl_disk_analysis_command(self):
+        """
+        获取 WSL Disk Analysis (Baobab) 命令
+
+        Returns:
+            str: WSL Disk Analysis 命令
+        """
+        return self.wsl_disk_analysis_command
+
+    def set_wsl_disk_analysis_command(self, command):
+        """
+        设置 WSL Disk Analysis (Baobab) 命令
+
+        Args:
+            command (str): WSL Disk Analysis 命令
+        """
+        self.wsl_disk_analysis_command = command
+        self.save_all_config()
+
+    def get_wsl_appearance_command(self):
+        """
+        获取 WSL Appearance (Gnome Tweaks) 命令
+
+        Returns:
+            str: WSL Appearance 命令
+        """
+        return self.wsl_appearance_command
+
+    def set_wsl_appearance_command(self, command):
+        """
+        设置 WSL Appearance (Gnome Tweaks) 命令
+
+        Args:
+            command (str): WSL Appearance 命令
+        """
+        self.wsl_appearance_command = command
+        self.save_all_config()
+
+    def get_wsl_bashrc_path(self):
+        """
+        获取 WSL .bashrc 文件路径
+
+        Returns:
+            str: WSL .bashrc 文件路径
+        """
+        return self.wsl_bashrc_path
+
+    def set_wsl_bashrc_path(self, path):
+        """
+        设置 WSL .bashrc 文件路径
+
+        Args:
+            path (str): WSL .bashrc 文件路径
+        """
+        self.wsl_bashrc_path = path
         self.save_all_config()

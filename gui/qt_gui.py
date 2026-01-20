@@ -111,8 +111,8 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
 
         将按钮的图标路径从相对路径改为绝对路径，确保在打包后能正确加载
         """
-        # 获取 resources 目录的绝对路径
-        resources_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "resources")
+        # 获取 icons 目录的绝对路径
+        icons_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "icons")
 
         # 定义按钮和对应的图标文件名
         button_icons = {
@@ -128,7 +128,7 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
         for button_name, icon_file in button_icons.items():
             if hasattr(self, button_name):
                 button = getattr(self, button_name)
-                icon_path = os.path.join(resources_path, icon_file)
+                icon_path = os.path.join(icons_path, icon_file)
                 if os.path.exists(icon_path):
                     button.setIcon(QIcon(icon_path))
                     print(f"按钮图标已设置: {button_name} -> {icon_path}")
@@ -138,16 +138,16 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
     def set_window_icon(self):
         """设置窗口图标
 
-        从传入的路径或 resources 目录加载并设置应用程序图标
+        从传入的路径或 icons 目录加载并设置应用程序图标
         """
         # 优先使用传入的图标路径
         if self.app_icon_path and os.path.exists(self.app_icon_path):
             window_icon_path = self.app_icon_path
         else:
-            # 获取 resources 目录的绝对路径
-            resources_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "resources")
+            # 获取 icons 目录的绝对路径
+            icons_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "icons")
             # 尝试查找 JDFOAM.png
-            window_icon_path = os.path.join(resources_path, "JDFOAM.png")
+            window_icon_path = os.path.join(icons_path, "JDFOAM.png")
 
         # 设置窗口图标
         if os.path.exists(window_icon_path):
@@ -175,6 +175,12 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
         self.start_mesh_btn.clicked.connect(self.start)
         self.combine_md_btn.clicked.connect(self.combine_to_markdown)
         self.combine_pdf_btn.clicked.connect(self.export_to_pdf)
+
+        # WSL 菜单操作
+        self.actionNautilus.triggered.connect(self.run_wsl_nautilus)
+        self.actionBaobab.triggered.connect(self.run_wsl_baobab)
+        self.actionGnome_tweaks.triggered.connect(self.run_wsl_gnome_tweaks)
+        self.action_bashrc.triggered.connect(self.open_wsl_bashrc)
 
     def select_msh(self):
         """选择 MSH 文件
@@ -299,6 +305,73 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
             subprocess.Popen(gmsh_exe)
         except Exception as e:
             QMessageBox.critical(self, "错误", f"无法启动Gmsh: {str(e)}")
+
+    def run_wsl_nautilus(self):
+        """运行 WSL Nautilus (文件管理器)
+
+        启动 WSL 中的 Nautilus 文件管理器
+        """
+        try:
+            command = self.config_manager.get_wsl_files_command()
+            if not command:
+                QMessageBox.warning(self, "提示", "WSL Files 命令未配置，请检查配置文件")
+                return
+
+            self.log_msg(f"运行 WSL Nautilus...")
+            subprocess.Popen(command, shell=True)
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"运行 WSL Nautilus 失败: {str(e)}")
+
+    def run_wsl_baobab(self):
+        """运行 WSL Baobab (磁盘分析工具)
+
+        启动 WSL 中的 Baobab 磁盘分析工具
+        """
+        try:
+            command = self.config_manager.get_wsl_disk_analysis_command()
+            if not command:
+                QMessageBox.warning(self, "提示", "WSL Disk Analysis 命令未配置，请检查配置文件")
+                return
+
+            self.log_msg(f"运行 WSL Baobab...")
+            subprocess.Popen(command, shell=True)
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"运行 WSL Baobab 失败: {str(e)}")
+
+    def run_wsl_gnome_tweaks(self):
+        """运行 WSL GNOME Tweaks (外观设置)
+
+        启动 WSL 中的 GNOME Tweaks 外观设置工具
+        """
+        try:
+            command = self.config_manager.get_wsl_appearance_command()
+            if not command:
+                QMessageBox.warning(self, "提示", "WSL Appearance 命令未配置，请检查配置文件")
+                return
+
+            self.log_msg(f"运行 WSL GNOME Tweaks...")
+            subprocess.Popen(command, shell=True)
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"运行 WSL GNOME Tweaks 失败: {str(e)}")
+
+    def open_wsl_bashrc(self):
+        """打开 WSL .bashrc 文件
+
+        使用系统默认编辑器打开 WSL 的 .bashrc 配置文件
+        """
+        try:
+            bashrc_path = self.config_manager.get_wsl_bashrc_path()
+            if not bashrc_path:
+                QMessageBox.warning(self, "提示", "WSL .bashrc 路径未配置，请检查配置文件")
+                return
+
+            if os.path.exists(bashrc_path):
+                self.log_msg(f"打开 .bashrc: {bashrc_path}")
+                os.startfile(bashrc_path)
+            else:
+                QMessageBox.warning(self, "提示", f".bashrc 文件不存在: {bashrc_path}")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"打开 .bashrc 失败: {str(e)}")
 
     def log_msg(self, msg):
         """
@@ -462,9 +535,9 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
         self.progressbar_manager.update_progress(0)
 
 
-def run_pyside6_gui(update_func, app_icon_path=None):
+def run_jdfoam_gui(update_func, app_icon_path=None):
     """
-    运行 PySide6 GUI
+    运行 JDFOAM GUI
 
     启动图形用户界面应用程序
 
@@ -484,7 +557,7 @@ def run_pyside6_gui(update_func, app_icon_path=None):
 
 
 __all__ = [
-    'run_pyside6_gui',
+    'run_jdfoam_gui',
     'PySide6GmshConverterGUI',
     'WorkerThread',
     'ConfigManager'

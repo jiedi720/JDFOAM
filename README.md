@@ -27,6 +27,7 @@ OpenFOAM 网格转换与源码管理工具 - 基于 PySide6 的图形界面应�
 - **配置管理**: 使用 INI 文件管理配置，支持持久化
 - **TreeFoam 集成**: 一键启动 TreeFoam 工具
 - **Gmsh 集成**: 一键启动 Gmsh 网格生成工具
+- **WSL 工具集成**: 通过 WSL 菜单快速访问 Nautilus、Baobab、GNOME Tweaks 等工具
 - **实时日志**: 显示操作过程中的详细日志信息
 
 ## 系统要求
@@ -106,6 +107,12 @@ openfoam_env_source = source /usr/lib/openfoam/openfoam2506/etc/bashrc
 
 # 界面主题 (light/dark)
 theme = dark
+
+# WSL 命令配置
+wsl_files_command = "C:\Program Files\WSL\wslg.exe" -d DEXCS2025 --cd "~" -- nautilus --new-window
+wsl_disk_analysis_command = "C:\Program Files\WSL\wslg.exe" -d DEXCS2025 --cd "~" -- baobab
+wsl_appearance_command = "C:\Program Files\WSL\wslg.exe" -d DEXCS2025 --cd "~" -- gnome-tweaks
+wsl_bashrc_path = Z:\home\jiedi\.bashrc
 ```
 
 ## 工作流程
@@ -203,7 +210,7 @@ build_exe.bat
 
 - 使用目录模式 (-D)，所有依赖文件在同一文件夹中
 - 输出目录: `./JDFOAM/`
-- 打包时会自动包含 `function/`、`gui/` 和 `resources/` 目录
+- 打包时会自动包含 `function/`、`gui/` 和 `icons/` 目录
 - 图标路径已修复为绝对路径，确保在打包后按钮图标能正常显示
 
 ### 图标修复
@@ -232,7 +239,7 @@ JDFOAM/
 │   ├── progressbar.py     # 进度条管理
 │   ├── theme.py           # 主题管理
 │   └── ui_JDFOAM.py       # UI 定义
-└── resources/             # 资源文件
+└── icons/                 # 资源文件
     ├── JDFOAM.png         # 应用图标 (PNG 格式)
     ├── gmsh.ico           # Gmsh 图标
     ├── search.png         # 搜索图标
