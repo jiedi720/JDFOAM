@@ -12,9 +12,9 @@ import os
 import subprocess
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QLineEdit, QPushButton, QPlainTextEdit, QFileDialog,
-                             QGroupBox, QProgressBar, QMessageBox)
+                             QGroupBox, QProgressBar, QMessageBox, QMenu)
 from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QIcon, QFont
+from PySide6.QtGui import QIcon, QFont, QAction
 from function.Gmsh2OpenFOAM import WorkerThread
 from function.config import ConfigManager
 from .theme import ThemeManager
@@ -93,6 +93,10 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
 
         # 应用主题
         self.theme_manager.apply_theme(saved_theme)
+
+        # 为日志框设置上下文菜单
+        self.Log.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.Log.customContextMenuRequested.connect(self.show_log_context_menu)
     
     def closeEvent(self, event):
         """
@@ -182,6 +186,9 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
         self.actionGnome_tweaks.triggered.connect(self.run_wsl_gnome_tweaks)
         self.action_bashrc.triggered.connect(self.open_wsl_bashrc)
 
+        # checkMesh 菜单操作
+        self.actioncheckMesh.triggered.connect(self.check_mesh)
+
     def select_msh(self):
         """选择 MSH 文件
 
@@ -244,6 +251,117 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
             os.startfile(dir_path)
         else:
             QMessageBox.warning(self, "提示", "请先选择有效的MSH文件")
+
+    def show_log_context_menu(self, pos):
+        """显示日志框的右键菜单
+
+        在日志框上右键点击时显示上下文菜单，包含复制、粘贴、全选、清除日志和保存日志选项
+
+        Args:
+            pos: 鼠标点击位置
+        """
+        menu = QMenu(self)
+
+        # 设置菜单样式，确保分隔线在 Dark 模式下可见
+        if self.theme_manager.current_theme == "dark":
+            menu.setStyleSheet("""
+QMenu {
+    background-color: #3D3D3D;
+    color: white;
+    border: 1px solid #555555;
+}
+QMenu::separator {
+    height: 2px;
+    background-color: #555555;
+    margin: 4px 8px;
+}
+QMenu::item {
+    padding: 5px 30px 5px 20px;
+}
+QMenu::item:selected {
+    background-color: #42A5F5;
+}
+""")
+        else:
+            menu.setStyleSheet("""
+QMenu::separator {
+    height: 2px;
+    background-color: #BDBDBD;
+    margin: 4px 8px;
+}
+""")
+
+        # 复制选项
+        copy_action = QAction("复制", self)
+        copy_action.triggered.connect(self.Log.copy)
+        menu.addAction(copy_action)
+
+        # 粘贴选项
+        paste_action = QAction("粘贴", self)
+        paste_action.triggered.connect(self.Log.paste)
+        menu.addAction(paste_action)
+
+        # 全选选项
+        select_all_action = QAction("全选", self)
+        select_all_action.triggered.connect(self.Log.selectAll)
+        menu.addAction(select_all_action)
+
+        # 添加分隔线
+        menu.addSeparator()
+
+        # 清除日志选项
+        clear_action = QAction("清除", self)
+        clear_action.triggered.connect(self.clear_log)
+        menu.addAction(clear_action)
+
+        # 添加分隔线
+        menu.addSeparator()
+
+        # 保存日志选项
+        save_action = QAction("保存日志", self)
+        save_action.triggered.connect(self.save_log_to_file)
+        menu.addAction(save_action)
+
+        # 在鼠标位置显示菜单
+        menu.exec(self.Log.mapToGlobal(pos))
+
+    def clear_log(self):
+        """清除日志框内容"""
+        self.Log.clear()
+
+    def save_log_to_file(self):
+        """保存日志内容到文件"""
+        log_content = self.Log.toPlainText()
+
+        if not log_content:
+            QMessageBox.information(self, "提示", "日志内容为空，无需保存")
+            return
+
+        # 获取算例目录作为默认保存路径
+        default_dir = self.case_path_edit.text()
+        if not default_dir or not os.path.isdir(default_dir):
+            default_dir = ""
+
+        # 生成默认文件名
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        default_filename = f"JDFOAM_log_{timestamp}.txt"
+
+        # 打开保存文件对话框
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "保存日志",
+            os.path.join(default_dir, default_filename),
+            "文本文件 (*.txt);;所有文件 (*.*)"
+        )
+
+        if file_path:
+            try:
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(log_content)
+                QMessageBox.information(self, "完成", f"日志已保存到:\n{file_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "错误", f"保存日志失败:\n{str(e)}")
 
     def run_treefoam(self):
         """运行 TreeFOAM 命令
@@ -372,6 +490,158 @@ class PySide6GmshConverterGUI(QMainWindow, Ui_JDFOAM_GUI):
                 QMessageBox.warning(self, "提示", f".bashrc 文件不存在: {bashrc_path}")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"打开 .bashrc 失败: {str(e)}")
+
+    def check_mesh(self):
+        """运行 checkMesh 命令
+
+        在当前算例目录通过 WSL 运行 checkMesh，并将结果保存到当前目录的 checkMesh时间.txt 文件中
+        """
+        try:
+            case_path = self.case_path_edit.text()
+            if not case_path or not os.path.isdir(case_path):
+                QMessageBox.warning(self, "提示", "请先选择有效的算例目录")
+                return
+
+            # 获取当前时间作为文件名的一部分
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+            output_filename = f"checkMesh_{timestamp}.txt"
+            output_path = os.path.join(case_path, output_filename)
+
+            self.log_msg(f"开始运行 checkMesh...")
+            self.log_msg(f"输出文件: {output_filename}")
+
+            # 将 Windows 路径转换为 WSL 路径
+            wsl_case_path = case_path.replace('\\', '/')
+            if wsl_case_path[1] == ':':
+                wsl_case_path = f"/mnt/{wsl_case_path[0].lower()}{wsl_case_path[2:]}"
+
+            # 获取 OpenFOAM 环境源路径
+            openfoam_env_source = self.config_manager.get_openfoam_env_source()
+
+            # 构建命令
+            command = f'wsl bash -c "cd {wsl_case_path} && {openfoam_env_source} && checkMesh > checkMesh_{timestamp}.txt 2>&1"'
+
+            self.log_msg(f"执行命令: {command}")
+
+            # 执行命令（不捕获输出，避免编码问题）
+            result = subprocess.run(command, shell=True, timeout=300)
+
+            # 等待文件写入完成
+            import time
+            time.sleep(0.5)
+
+            # 读取结果文件内容
+            result_content = ""
+            if os.path.exists(output_path):
+                with open(output_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    result_content = f.read()
+            else:
+                self.log_msg(f"警告: 输出文件未生成: {output_path}")
+
+            # OpenFOAM 的 checkMesh 在发现问题时返回非零退出码，这是正常行为
+            # 只要结果文件生成了，就认为执行成功
+            if os.path.exists(output_path):
+                self.log_msg("=" * 60)
+                self.log_msg("checkMesh 执行结果:")
+                self.log_msg("=" * 60)
+                self.log_msg(result_content)
+                self.log_msg("=" * 60)
+
+                # 提取网格质量指标
+                cells = None
+                aspect_ratio = None
+                non_orthogonality_max = None
+                non_orthogonality_avg = None
+                skewness = None
+
+                for line in result_content.split('\n'):
+                    # 提取单元总数：格式如 "cells: 12345"
+                    if line.strip().startswith('cells:'):
+                        cells = line.strip()
+                    # 提取最大伸缩比：格式如 "Max aspect ratio = 1.23"
+                    elif 'Max aspect ratio' in line and '=' in line:
+                        aspect_ratio = line.strip()
+                    # 提取非正交度：格式如 "Mesh non-orthogonality Max: 64.757824 average: 22.320833"
+                    elif 'Mesh non-orthogonality Max:' in line:
+                        non_orthogonality_max = line.strip()
+                        non_orthogonality_avg = line.strip()
+                    # 提取最大偏斜度：格式如 "Max skewness = 0.45"
+                    elif 'Max skewness' in line and '=' in line:
+                        skewness = line.strip()
+
+                # 提取数值并保留2位小数
+                import re
+
+                def extract_value(text):
+                    match = re.search(r'[\d.]+', str(text))
+                    if match:
+                        try:
+                            return float(match.group())
+                        except ValueError:
+                            return None
+                    return None
+
+                # 从 "cells: 12345" 提取数值
+                cells_value = None
+                if cells:
+                    match = re.search(r'cells:\s*([\d.]+)', cells)
+                    if match:
+                        cells_value = float(match.group(1))
+
+                aspect_ratio_value = extract_value(aspect_ratio)
+
+                # 从 "Mesh non-orthogonality Max: 64.757824 average: 22.320833" 提取两个值
+                non_orthogonality_max_value = None
+                non_orthogonality_avg_value = None
+                if non_orthogonality_max:
+                    max_match = re.search(r'Max:\s*([\d.]+)', non_orthogonality_max)
+                    avg_match = re.search(r'average:\s*([\d.]+)', non_orthogonality_max)
+                    if max_match:
+                        non_orthogonality_max_value = float(max_match.group(1))
+                    if avg_match:
+                        non_orthogonality_avg_value = float(avg_match.group(1))
+
+                skewness_value = extract_value(skewness)
+
+                # 保存网格质量指标到单独的文件
+                quality_filename = f"MeshQuality_{timestamp}.txt"
+                quality_path = os.path.join(case_path, quality_filename)
+
+                with open(quality_path, 'w', encoding='utf-8') as f:
+                    f.write("网格质量指标\n")
+                    f.write("=" * 40 + "\n\n")
+                    if cells_value is not None:
+                        f.write(f"单元总数\ncells = {cells_value:.0f}\n\n")
+                    if aspect_ratio_value is not None:
+                        f.write(f"最大伸缩比\nMax aspect ratio = {aspect_ratio_value:.2f}\n\n")
+                    if non_orthogonality_max_value is not None:
+                        f.write(f"最大非正交度\nMesh non-orthogonality Max = {non_orthogonality_max_value:.2f}\n\n")
+                    if non_orthogonality_avg_value is not None:
+                        f.write(f"平均非正交度\nMesh non-orthogonality average = {non_orthogonality_avg_value:.2f}\n\n")
+                    if skewness_value is not None:
+                        f.write(f"最大偏斜度\nMax skewness = {skewness_value:.2f}\n\n")
+                    f.write("=" * 40 + "\n")
+                    f.write(f"生成时间: {timestamp}\n")
+
+                self.log_msg(f"网格质量指标已保存到: {quality_filename}")
+
+                # 检查结果中是否包含 "Mesh OK"
+                if "Mesh OK" in result_content:
+                    QMessageBox.information(self, "完成", f"checkMesh 执行完成！\n网格状态: OK\n结果已保存到: {output_filename}\n网格质量指标已保存到: {quality_filename}")
+                else:
+                    QMessageBox.warning(self, "完成", f"checkMesh 执行完成！\n网格存在问题，请查看日志详情。\n结果已保存到: {output_filename}\n网格质量指标已保存到: {quality_filename}")
+            else:
+                self.log_msg(f"checkMesh 执行失败，返回码: {result.returncode}")
+                self.log_msg(f"错误信息: {result.stderr}")
+                QMessageBox.critical(self, "错误", f"checkMesh 执行失败，结果文件未生成。")
+
+        except subprocess.TimeoutExpired:
+            QMessageBox.critical(self, "错误", "checkMesh 执行超时（超过5分钟）")
+            self.log_msg("checkMesh 执行超时")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"运行 checkMesh 失败: {str(e)}")
+            self.log_msg(f"错误: {str(e)}")
 
     def log_msg(self, msg):
         """

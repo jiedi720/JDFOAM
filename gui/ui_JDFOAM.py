@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'JDFOAMgKLPPr.ui'
+## Form generated from reading UI file 'JDFOAMdUAybH.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.1
 ##
@@ -44,6 +44,8 @@ class Ui_JDFOAM_GUI(object):
         self.actionGnome_tweaks.setObjectName(u"actionGnome_tweaks")
         self.action_bashrc = QAction(JDFOAM_GUI)
         self.action_bashrc.setObjectName(u"action_bashrc")
+        self.actioncheckMesh = QAction(JDFOAM_GUI)
+        self.actioncheckMesh.setObjectName(u"actioncheckMesh")
         self.centralwidget = QWidget(JDFOAM_GUI)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout_2 = QVBoxLayout(self.centralwidget)
@@ -369,6 +371,7 @@ class Ui_JDFOAM_GUI(object):
 
         self.Log = QPlainTextEdit(self.centralwidget)
         self.Log.setObjectName(u"Log")
+        self.Log.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.Log.setStyleSheet(u"QPlainTextEdit {\n"
 "    /* 1. \u5fc5\u987b\u6709\u8fb9\u6846\uff0c\u900f\u660e\u5373\u53ef */\n"
 "    border: 1px solid transparent;\n"
@@ -401,16 +404,20 @@ class Ui_JDFOAM_GUI(object):
         self.menu_theme.setObjectName(u"menu_theme")
         self.menuWSL = QMenu(self.menubar)
         self.menuWSL.setObjectName(u"menuWSL")
+        self.menucheckMesh = QMenu(self.menubar)
+        self.menucheckMesh.setObjectName(u"menucheckMesh")
         JDFOAM_GUI.setMenuBar(self.menubar)
 
         self.menubar.addAction(self.menu_theme.menuAction())
         self.menubar.addAction(self.menuWSL.menuAction())
+        self.menubar.addAction(self.menucheckMesh.menuAction())
         self.menu_theme.addAction(self.action_light_theme)
         self.menu_theme.addAction(self.action_dark_theme)
         self.menuWSL.addAction(self.actionNautilus)
         self.menuWSL.addAction(self.actionBaobab)
         self.menuWSL.addAction(self.actionGnome_tweaks)
         self.menuWSL.addAction(self.action_bashrc)
+        self.menucheckMesh.addAction(self.actioncheckMesh)
 
         self.retranslateUi(JDFOAM_GUI)
 
@@ -425,6 +432,7 @@ class Ui_JDFOAM_GUI(object):
         self.actionBaobab.setText(QCoreApplication.translate("JDFOAM_GUI", u"Disk Analysis", None))
         self.actionGnome_tweaks.setText(QCoreApplication.translate("JDFOAM_GUI", u"Appearance", None))
         self.action_bashrc.setText(QCoreApplication.translate("JDFOAM_GUI", u".bashrc", None))
+        self.actioncheckMesh.setText(QCoreApplication.translate("JDFOAM_GUI", u"checkMesh", None))
         self.case_label.setText(QCoreApplication.translate("JDFOAM_GUI", u"\u7b97\u4f8b\u76ee\u5f55:", None))
         self.case_path_edit.setPlaceholderText(QCoreApplication.translate("JDFOAM_GUI", u"\u9009\u62e9\u7b97\u4f8b\u9879\u76ee\u6839\u76ee\u5f55", None))
         self.msh_label.setText(QCoreApplication.translate("JDFOAM_GUI", u".msh\u6587\u4ef6:", None))
@@ -459,5 +467,6 @@ class Ui_JDFOAM_GUI(object):
         self.progress_bar.setFormat("")
         self.menu_theme.setTitle(QCoreApplication.translate("JDFOAM_GUI", u"Theme", None))
         self.menuWSL.setTitle(QCoreApplication.translate("JDFOAM_GUI", u"WSL", None))
+        self.menucheckMesh.setTitle(QCoreApplication.translate("JDFOAM_GUI", u"checkMesh", None))
     # retranslateUi
 

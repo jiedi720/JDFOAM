@@ -298,13 +298,6 @@ class ThemeManager:
         # 再次处理事件，确保所有更新都完成
         app.processEvents()
 
-        # 为菜单项设置统一的字体，确保两种模式下字体一致
-        menu_font = QFont()
-        menu_font.setHintingPreference(QFont.PreferNoHinting)
-        menu_font.setPointSize(10)  # 统一字体大小
-        self.parent.action_light_theme.setFont(menu_font)
-        self.parent.action_dark_theme.setFont(menu_font)
-
         # 更新按钮图标颜色
         self.update_button_icons(theme)
 
@@ -393,3 +386,96 @@ QPushButton:pressed {
         self.parent.style().unpolish(self.parent)  # 取消现有样式
         self.parent.style().polish(self.parent)    # 应用新样式
         self.parent.update()                       # 更新界面
+
+        # 设置菜单栏样式
+        self.apply_menu_style(theme)
+
+    def apply_menu_style(self, theme):
+        """
+        应用菜单栏样式
+
+        根据主题设置菜单栏和菜单项的样式，使用 VS Code 蓝色作为选中背景色
+
+        Args:
+            theme (str): 当前主题，"light" 或 "dark"
+        """
+        if theme == "dark":
+            # Dark 模式菜单样式
+            menu_style = """
+QMenuBar {
+    background-color: #3D3D3D;
+    color: white;
+    border-bottom: 1px solid #555555;
+    font-size: 10pt;
+}
+QMenuBar::item {
+    background-color: transparent;
+    padding: 5px 10px;
+    font-size: 10pt;
+}
+QMenuBar::item:selected {
+    background-color: #007ACC;  /* VS Code 蓝色 */
+    color: white;
+}
+QMenu {
+    background-color: #3D3D3D;
+    color: white;
+    border: 1px solid #555555;
+    font-size: 10pt;
+}
+QMenu::item {
+    padding: 5px 30px 5px 20px;
+    font-size: 10pt;
+}
+QMenu::item:selected {
+    background-color: #007ACC;  /* VS Code 蓝色 */
+    color: white;
+}
+QMenu::separator {
+    height: 2px;
+    background-color: #555555;
+    margin: 4px 8px;
+}
+"""
+        else:
+            # Light 模式菜单样式
+            menu_style = """
+QMenuBar {
+    background-color: #F0F0F0;
+    color: black;
+    border-bottom: 1px solid #BDBDBD;
+    font-size: 10pt;
+}
+QMenuBar::item {
+    background-color: transparent;
+    padding: 5px 10px;
+    font-size: 10pt;
+}
+QMenuBar::item:selected {
+    background-color: #007ACC;  /* VS Code 蓝色 */
+    color: white;
+}
+QMenu {
+    background-color: white;
+    color: black;
+    border: 1px solid #BDBDBD;
+    font-size: 10pt;
+}
+QMenu::item {
+    padding: 5px 30px 5px 20px;
+    font-size: 10pt;
+}
+QMenu::item:selected {
+    background-color: #007ACC;  /* VS Code 蓝色 */
+    color: white;
+}
+QMenu::separator {
+    height: 2px;
+    background-color: #BDBDBD;
+    margin: 4px 8px;
+}
+"""
+
+        # 应用样式到菜单栏
+        if hasattr(self.parent, 'menubar'):
+            self.parent.menubar.setStyleSheet(menu_style)
