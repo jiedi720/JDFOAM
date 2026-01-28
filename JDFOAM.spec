@@ -30,7 +30,7 @@ a = Analysis(
         'function.config',
         'function.SourceCodeBinder',
         'function.md2pdf',
-        'gui.main_window',
+        'gui.qt_gui',
         'gui.theme',
         'gui.ui_JDFOAM',
         'gui.progressbar',
